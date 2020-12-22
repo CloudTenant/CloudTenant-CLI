@@ -11,6 +11,7 @@ export interface BackupLink {
 
   lastBackupTimestamp: number; // ? default 0
   status: BackupLinkStatus; // ? default is PENDING
+  logsPath: string;
 }
 
 export interface Links {

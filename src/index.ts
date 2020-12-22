@@ -397,8 +397,3 @@ backupLinkCommand
 
 // ? init
 program.parse(process.argv);
-
-// ! test
-BackupLinksService.startBackup(
-  BackupLinksService.backupLinksNameToIdMap('for-bakcup'),
-);

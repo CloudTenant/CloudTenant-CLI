@@ -70,6 +70,10 @@ export class Class {
 
     return true;
   }
+
+  get logsFolderPath(): string {
+    return this.#logsFolderPath;
+  }
 }
 
 const AppService = new Class();

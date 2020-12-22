@@ -19,6 +19,8 @@ import { BackupLinksModel } from './model/backup-links.model';
  */
 import { AddBackupLinkParams, BackupLink, BackupLinkStatus } from './@types';
 import { BackupLinksError, UserChange } from '@src/common/errors';
+import { AppService } from '../app/app.service';
+import { join } from 'path';
 
 class Class {
   /**
@@ -38,6 +40,10 @@ class Class {
       id: backupLinkId,
       lastBackupTimestamp: 0,
       status: BackupLinkStatus.PENDING,
+      logsPath: join(
+        AppService.logsFolderPath,
+        `backup-link-${backupLinkId}.log`,
+      ),
     };
 
     BackupLinksModel.raw[backupLinkId] = backupLink;
