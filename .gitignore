@@ -1,0 +1,24 @@
+# dependencies
+/node_modules
+
+*.log
+
+# dist
+/dist
+
+# test
+coverage
+
+# folders for tests
+mock
+playground
+
+# IDE - VSCode
+.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+

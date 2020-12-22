@@ -1,0 +1,31 @@
+
+# source code
+src
+
+# compiler
+tsconfig.json
+webpack.config.js
+
+# files
+*.log
+
+# tests
+test
+jest.config.js
+setupJest.ts
+coverage
+
+# folders for tests
+mock
+playground
+
+#  lint
+.eslintrc.js
+.prettierrc
+
+# IDE - VSCode
+.vscode
+*.code-workspace
+
+# git
+.git
