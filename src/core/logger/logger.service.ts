@@ -1,5 +1,11 @@
 /**
- * * Constnts
+ * * Dependencies
+ */
+import * as fs from 'fs';
+import * as os from 'os';
+
+/**
+ * * Constants
  */
 import { ANSI_COLORS } from './constants';
 
@@ -118,6 +124,70 @@ class Class {
             break;
           }
         }
+      });
+    });
+  }
+
+  /**
+   * * Log message to file path
+   * ? only resolve with true or false -> the program should not be impacted if the log failed or not
+   * @param path - file path wehere to log
+   * @param text - text to show
+   */
+  appendToFile(path: string, text: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      fs.open(path, 'a', (err: NodeJS.ErrnoException | null, fd: number) => {
+        if (err) {
+          return resolve(false);
+        }
+        fs.write(
+          fd,
+          text + os.EOL,
+          null,
+          'utf-8',
+          (err: NodeJS.ErrnoException | null) => {
+            if (err) {
+              return resolve(false);
+            }
+            fs.close(fd, (err: NodeJS.ErrnoException | null) => {
+              if (err) {
+                return resolve(false);
+              }
+              return resolve(true);
+            });
+          },
+        );
+      });
+    });
+  }
+
+  /**
+   * * Overwrite a file text at a certain position
+   * @param path
+   * @param text
+   * @param pos
+   */
+  overWriteFileAtPosition(
+    path: string,
+    text: string,
+    pos: number,
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      fs.readFile(path, 'utf-8', (err: NodeJS.ErrnoException, data: string) => {
+        if (err) {
+          return resolve(false);
+        }
+        const lines: string[] = data.split(os.EOL);
+        lines[pos] = text;
+
+        console.log(lines.join(os.EOL));
+        fs.writeFile(path, lines.join(os.EOL), (err: NodeJS.ErrnoException) => {
+          if (err) {
+            resolve(false);
+          }
+
+          return resolve(true);
+        });
       });
     });
   }

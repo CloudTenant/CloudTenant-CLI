@@ -1,48 +1,43 @@
 /**
  * * Dependencies
  */
-import { join } from 'path';
-import { WriteStream, createWriteStream } from 'fs';
-import { S3, AWSError } from 'aws-sdk';
-import {
-  Bucket,
-  CommonPrefix,
-  CommonPrefixList,
-  HeadObjectOutput,
-  ListBucketsOutput,
-  ObjectList,
-  PutObjectRequest,
-} from 'aws-sdk/clients/s3';
+import { S3 } from 'aws-sdk';
 
 /**
  * * Types
  */
-import { ListObjectsParams, S3Credentials } from './@types';
+import { S3Credentials } from './@types';
+import { ListBucketsOutput } from 'aws-sdk/clients/s3';
 
 /**
  * * Error objs
  */
-import { PlatformError, S3Error } from '@common/errors';
+import { S3Error } from '@common/errors';
 
 class Class {
-  // *
-  #buildS3Client = (credentials: S3Credentials): S3 => {
+  /**
+   * * Public methods
+   */
+
+  /**
+   * * Return an S3 instance based on a set of credentials
+   * @param credentials
+   */
+  buildS3Client(credentials: S3Credentials): S3 {
     return new S3({
       endpoint: credentials.endpoint,
       accessKeyId: credentials.accessKeyId,
       secretAccessKey: credentials.secretAccessKey,
     });
-  };
+  }
 
   /**
    * * List all the buckets from a storage
    * @param credentials
    */
-  public async listBuckets(
-    credentials: S3Credentials,
-  ): Promise<ListBucketsOutput> {
+  async listBuckets(credentials: S3Credentials): Promise<ListBucketsOutput> {
     try {
-      const client: S3 = this.#buildS3Client(credentials);
+      const client: S3 = this.buildS3Client(credentials);
       const data: ListBucketsOutput = await client.listBuckets().promise();
 
       return data;
