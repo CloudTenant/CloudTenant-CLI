@@ -395,5 +395,14 @@ backupLinkCommand
     BackupLinksService.removeBackupLink(backupLinkId);
   });
 
+// * 4 Start the job for a backup link
+// ? this command will be executed by the processes that will be created
+backupLinkCommand
+  .command('start-one', { hidden: true })
+  .option('--id <id>')
+  .action((opts) => {
+    BackupLinksService.startBackup(opts.id);
+  });
+
 // ? init
 program.parse(process.argv);

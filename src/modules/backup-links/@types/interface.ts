@@ -9,9 +9,11 @@ export interface BackupLink {
   prefix?: string; // ? s3 prefix (folder)
   linkName?: string; // ? unique
 
+  // ? internally handled
   lastBackupTimestamp: number; // ? default 0
   status: BackupLinkStatus; // ? default is PENDING
   logsPath: string;
+  processPID?: number;
 }
 
 export interface Links {
