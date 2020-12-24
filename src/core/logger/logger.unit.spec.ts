@@ -51,8 +51,6 @@ describe('LoggerService - Unit Testing', () => {
     it('It should output the correct message with the correct colors and symbols', () => {
       LoggerService.descriptiveLists(lists);
 
-      console.log(MOCKED_STDOUT_VALUE);
-
       const head: string = MOCKED_STDOUT_VALUE[0];
       const errRow: string = MOCKED_STDOUT_VALUE[1];
       const warnRow: string = MOCKED_STDOUT_VALUE[2];
