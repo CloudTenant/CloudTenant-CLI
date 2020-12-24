@@ -180,7 +180,6 @@ class Class {
         const lines: string[] = data.split(os.EOL);
         lines[pos] = text;
 
-        console.log(lines.join(os.EOL));
         fs.writeFile(path, lines.join(os.EOL), (err: NodeJS.ErrnoException) => {
           if (err) {
             resolve(false);
