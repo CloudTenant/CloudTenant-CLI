@@ -81,8 +81,8 @@ program.version(__VERSION__);
 program
   .command('init')
   .description('Initialize CloudTenant CLI tool')
-  .action(() => {
-    const initSuccessfully: boolean = AppService.initApp();
+  .action(async () => {
+    const initSuccessfully: boolean = await AppService.initApp();
     if (initSuccessfully) {
       LoggerService.success('Application was initialized successfuly');
     }

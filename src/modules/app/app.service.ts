@@ -40,7 +40,7 @@ export class Class {
    * * initApp
    * ? this function will initialize all the requirments (ex: create store folder/folders)
    */
-  initApp(): boolean {
+  async initApp(): Promise<boolean> {
     if (this.#store.get('appInit')) {
       LoggerService.warn('The application was already initialized');
       return false;
@@ -50,7 +50,7 @@ export class Class {
     UtilService.createFolder(this.#appFolderPath);
     UtilService.createFolder(this.#logsFolderPath);
 
-    this.#store.set('appInit', true);
+    await this.#store.set('appInit', true);
     return true;
   }
 

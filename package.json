@@ -21,6 +21,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "jest",
     "test:unit": "jest .*/.*.unit.spec.ts",
+    "test:integration": "jest .*/.*.integration.spec.ts --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
   },
