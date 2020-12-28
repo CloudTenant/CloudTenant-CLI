@@ -5,12 +5,16 @@ import { accessSync } from 'fs';
 import { DirUtils } from 'dir-fs-utils';
 import { join } from 'path';
 import * as upath from 'upath';
+import { S3 } from 'aws-sdk';
 
 /**
  * * Services
  */
 import { UtilService } from '@src/common/util/util.service';
 import { AppService } from '../app/app.service';
+import { StoragesService } from '../storages/storages.service';
+import { S3ManagerService } from '@src/core/s3-manager/s3-manager.service';
+import { FileTransporterService } from '../file-transporter/file-transporter.service';
 
 /**
  * * Model
@@ -23,17 +27,13 @@ import { BackupLinksModel } from './model/backup-links.model';
 import { AddBackupLinkParams, BackupLink, BackupLinkStatus } from './@types';
 import { BackupLinksError } from '@src/common/errors';
 import { LoggerService } from '@src/core/logger/logger.service';
+import { S3Credentials } from '@src/core/s3-manager/@types';
+import { TransportLocalToS3Params } from '../file-transporter/@types';
 
 /**
  * * Constants
  */
 import { LOG_MARKERS } from './constants';
-import { FileTransporterService } from '../file-transporter/file-transporter.service';
-import { StoragesService } from '../storages/storages.service';
-import { S3 } from 'aws-sdk';
-import { S3Credentials } from '@src/core/s3-manager/@types';
-import { S3ManagerService } from '@src/core/s3-manager/s3-manager.service';
-import { TransportLocalToS3Params } from '../file-transporter/@types';
 
 class Class {
   /**

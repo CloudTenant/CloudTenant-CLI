@@ -45,7 +45,7 @@ describe('AppService - Unit Tests', () => {
 
   describe('initApp()', () => {
     // *
-    it('Should initiate the application, by creating the required folders and by setting the appInit property to true', () => {
+    it('Should initiate the application, by creating the required folders and by setting the appInit property to true', async () => {
       jest
         .spyOn(MockedStoreService, 'get')
         .mockImplementation((key: string) => false);
@@ -54,7 +54,7 @@ describe('AppService - Unit Tests', () => {
 
       const createFolderSpy = jest.spyOn(MockedUtilsService, 'createFolder');
 
-      const output: boolean = AppService.initApp();
+      const output: boolean = await AppService.initApp();
 
       expect(output).toBeTruthy();
 
@@ -64,7 +64,7 @@ describe('AppService - Unit Tests', () => {
     });
 
     // *
-    it('Should handle the scenario where the application was initiated before', () => {
+    it('Should handle the scenario where the application was initiated before', async () => {
       jest
         .spyOn(MockedStoreService, 'get')
         .mockImplementation((key: string) => true);
@@ -73,7 +73,7 @@ describe('AppService - Unit Tests', () => {
       const createFolderSpy = jest.spyOn(MockedUtilsService, 'createFolder');
       const warnSpy = jest.spyOn(MockedLoggerService, 'warn');
 
-      const output: boolean = AppService.initApp();
+      const output: boolean = await AppService.initApp();
 
       expect(output).toBeFalsy();
 

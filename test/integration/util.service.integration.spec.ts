@@ -9,7 +9,7 @@ import { join } from 'path';
  */
 import { UtilService } from '../../src/common/util/util.service';
 
-describe('AppService - Integration Tests', () => {
+describe('UtilService - Integration Tests', () => {
   const APP_TEST_FOLDER: string = join(
     process.env.APPDATA,
     'CloudTenantCLI-Testing',
