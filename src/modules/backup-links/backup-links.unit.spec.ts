@@ -42,11 +42,6 @@ jest.mock('@src/common/util/util.service', () => {
 import { join } from 'path';
 
 /**
- * * Inner Dependencies
- */
-import { UtilService } from '@src/common/util/util.service';
-
-/**
  * * Types
  */
 import { BackupLinkStatus } from './@types';
@@ -64,13 +59,13 @@ describe('BackupLinksService - Unit Tests', () => {
 
   describe('addBackupLink()', () => {
     //*
-    it('Should add a new backup-link with the default options', () => {
+    it('Should add a new backup-link with the default options', async () => {
       const spySave = jest.spyOn(MockedBackupLinksModel, 'save');
 
-      jest.spyOn(UtilService, 'generateRandomId').mockReturnValue('id');
+      jest.spyOn(MockedUtilsService, 'generateRandomId').mockReturnValue('id');
 
       //@ts-ignore
-      BackupLinksService.addBackupLink({});
+      await BackupLinksService.addBackupLink({});
 
       expect(MockedBackupLinksModel.raw.id).toBeDefined();
 
@@ -87,13 +82,13 @@ describe('BackupLinksService - Unit Tests', () => {
 
   describe('removeBackupLink()', () => {
     //*
-    it('Should remove backup-link', () => {
+    it('Should remove backup-link', async () => {
       const spySave = jest.spyOn(MockedBackupLinksModel, 'save');
 
       MockedBackupLinksModel.raw.id = {};
 
       expect(MockedBackupLinksModel.raw.id).toBeDefined();
-      BackupLinksService.removeBackupLink('id');
+      await BackupLinksService.removeBackupLink('id');
       expect(MockedBackupLinksModel.raw.id).not.toBeDefined();
 
       expect(spySave).toHaveBeenCalled();
@@ -115,14 +110,14 @@ describe('BackupLinksService - Unit Tests', () => {
 
   describe('backupLinksNameToIdMap()', () => {
     //*
-    it("Should return the id of a backup link based on it's", () => {
+    it("Should return the id of a backup link based on it's name", () => {
       MockedBackupLinksModel.raw.id = { linkName: 'one' };
 
       expect(BackupLinksService.backupLinksNameToIdMap('one')).toBe('id');
     });
 
     //*
-    it("Should return undefined if there is no backup link with the supplied nameid of a backup link based on it's", () => {
+    it('Should return undefined if there is no backup link with the supplied name', () => {
       expect(BackupLinksService.backupLinksNameToIdMap('one')).toBeUndefined();
     });
   });
