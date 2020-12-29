@@ -2,12 +2,17 @@
  * * Dependencies
  */
 import { S3 } from 'aws-sdk';
+import * as fs from 'fs';
 
 /**
  * * Types
  */
-import { S3Credentials } from './@types';
-import { ListBucketsOutput } from 'aws-sdk/clients/s3';
+import {
+  S3Credentials,
+  TransportLocalToS3Params,
+  UploadProgressCallback,
+} from './@types';
+import { ListBucketsOutput, ManagedUpload } from 'aws-sdk/clients/s3';
 
 /**
  * * Error objs
@@ -44,6 +49,50 @@ class Class {
     } catch (err) {
       throw new S3Error('The bucket content could not be listed');
     }
+  }
+
+  /**
+   * * Upload a file from local file system to S3
+   * @param payload
+   * @param cb - will be called each time a chunk was READ from the local read stream
+   */
+  localToS3(
+    payload: TransportLocalToS3Params,
+    cb?: UploadProgressCallback,
+  ): Promise<ManagedUpload.SendData> {
+    return new Promise((resolve, reject) => {
+      const stream = fs.createReadStream(payload.filePath);
+
+      stream
+        .on('error', (err) => {
+          return reject(err);
+        })
+
+        .on('data', (chunk: string | Buffer) => {
+          if (cb) {
+            cb(chunk.length);
+          }
+        });
+
+      const params = {
+        Bucket: payload.bucket,
+        Key: payload.fileKey,
+        Body: stream,
+      };
+
+      const options = { partSize: 5 * 1024 * 1024, queueSize: 4 };
+
+      payload.s3.upload(
+        params,
+        options,
+        (err, data: ManagedUpload.SendData) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(data);
+        },
+      );
+    });
   }
 }
 

@@ -14,7 +14,6 @@ import { UtilService } from '@src/common/util/util.service';
 import { AppService } from '../app/app.service';
 import { StoragesService } from '../storages/storages.service';
 import { S3ManagerService } from '@src/core/s3-manager/s3-manager.service';
-import { FileTransporterService } from '../file-transporter/file-transporter.service';
 
 /**
  * * Model
@@ -27,8 +26,10 @@ import { BackupLinksModel } from './model/backup-links.model';
 import { AddBackupLinkParams, BackupLink, BackupLinkStatus } from './@types';
 import { BackupLinksError } from '@src/common/errors';
 import { LoggerService } from '@src/core/logger/logger.service';
-import { S3Credentials } from '@src/core/s3-manager/@types';
-import { TransportLocalToS3Params } from '../file-transporter/@types';
+import {
+  S3Credentials,
+  TransportLocalToS3Params,
+} from '@src/core/s3-manager/@types';
 
 /**
  * * Constants
@@ -186,7 +187,7 @@ class Class {
       };
 
       try {
-        await FileTransporterService.localToS3(
+        await S3ManagerService.localToS3(
           payload,
           async (progressBytes: number) => {
             uploadedBytesSize += progressBytes;

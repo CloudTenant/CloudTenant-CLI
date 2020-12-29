@@ -1,112 +1,24 @@
 /**
- * * Mock data
+ * * Mocks
  */
 
-const mockedListBucketOutput: ListBucketsOutput = {
-  Buckets: [],
-};
-
-const mockDate = new Date();
-
-const mockedListObjectsOutput: ListObjectsOutput = {
-  IsTruncated: false,
-  Contents: [{ Key: 'my-dummy-obj', Size: 20, LastModified: mockDate }],
-  NextMarker: '',
-};
-
-// ? some s3 serevices may return data in a different format, and requires other method of interogation
-const s3ContentInDifferentFormat: any = {
-  IsTruncated: false,
-};
-
-const endCallback = () => {
-  return {
-    createReadStream: () => {
-      return {
-        on: (err: any, cb: Function) => {
-          return {
-            on: (end: any, cb: Function) => {
-              cb();
-              return {
-                pipe: () => {},
-              };
-            },
-          };
-        },
-      };
-    },
-  };
-};
-
-const errCallback = () => {
-  return {
-    createReadStream: () => {
-      return {
-        on: (err: any, cb: Function) => {
-          cb();
-          return {
-            on: (end: any, cb: Function) => {
-              return {
-                pipe: () => {},
-              };
-            },
-          };
-        },
-      };
-    },
-  };
-};
-
-const mockedS3 = {
-  listBuckets: () => {
-    return {
-      promise: (): ListBucketsOutput => mockedListBucketOutput,
-    };
-  },
-  listObjects: (params: any) => {
-    return {
-      promise: (): ListObjectsOutput => mockedListObjectsOutput,
-    };
-  },
-
-  upload: (params: any) => {
-    return {
-      promise: () => true,
-    };
-  },
-
-  getObject: endCallback,
-};
-
-// * functions that will make the s3manager to return errors
-const s3DifferentContentFunction = (params: any) => {
-  return {
-    promise: (): ListObjectsOutput => s3ContentInDifferentFormat,
-  };
-};
-
-const fThatThrowsError = () => {
-  return {
-    promise: () => {
-      throw new Error();
-    },
-  };
+// * Aws SDK
+const mockedAwsSdk: any = {
+  listBuckets: (): any => undefined,
+  upload: (params: any, option: any, cb: any): any => undefined,
 };
 
 jest.mock('aws-sdk', () => {
   return {
     S3: jest.fn().mockImplementation(() => {
-      return mockedS3;
+      return mockedAwsSdk;
     }),
   };
 });
 
-const trueExist = () => true;
-const falseExist = () => false;
-
+// * fs
 const mockedFs = {
-  existsSync: trueExist,
-  createWriteStream: () => {},
+  createReadStream: (): any => undefined,
 };
 
 jest.mock('fs', () => {
@@ -114,7 +26,7 @@ jest.mock('fs', () => {
 });
 
 /**
- * * Services
+ * * Test Target
  */
 
 import { S3ManagerService } from './s3-manager.service';
@@ -126,39 +38,35 @@ import { ListBucketsOutput, ListObjectsOutput } from 'aws-sdk/clients/s3';
 import { S3Error } from '@src/common/errors';
 
 describe('S3ManagerService Unit Testing', () => {
-  const service = S3ManagerService;
-
-  // * listBuckets()
-  it('listBuckets() - it should list buckets', async () => {
-    const data: ListBucketsOutput = await service.listBuckets({
-      endpoint: 'e',
-      accessKeyId: 'a',
-      secretAccessKey: 's',
-    });
-
-    expect(data).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('listBuckets() - it should catch the error', async () => {
-    // ? replace the original function with the function that returns data in a different format
-    const originalF: any = mockedS3.listBuckets;
-    mockedS3.listBuckets = fThatThrowsError;
+  describe('listBuckets()', () => {
+    // *
+    it('Should list buckets', async () => {
+      jest
+        .spyOn(mockedAwsSdk, 'listBuckets')
+        .mockReturnValue({ promise: () => 'data' });
 
-    let throwThis = async () => {
-      await service.listBuckets({
+      const data: ListBucketsOutput = await S3ManagerService.listBuckets({
         endpoint: 'e',
         accessKeyId: 'a',
         secretAccessKey: 's',
       });
-    };
 
-    const spy = jest.fn();
-    await throwThis().catch(spy);
-    expect(spy).toHaveBeenCalledTimes(1);
+      expect(data).toBeDefined();
+    });
 
-    expect(spy.mock.calls[0][0] instanceof S3Error).toBeTruthy();
+    // *
+    it("Should throw new error if the content can't be listed", async () => {
+      // ? replace the original function with the function that returns data in a different format
+      jest.spyOn(mockedAwsSdk, 'listBuckets').mockImplementation(() => {
+        throw new Error();
+      });
 
-    // ? clean up
-    mockedS3.listBuckets = originalF;
+      //@ts-ignore
+      await expect(S3ManagerService.listBuckets()).rejects.toThrow(S3Error);
+    });
   });
 });

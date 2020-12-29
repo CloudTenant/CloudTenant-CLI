@@ -1,3 +1,5 @@
+import { S3 } from 'aws-sdk';
+
 /**
  * * Objects
  */
@@ -21,4 +23,11 @@ export interface ListObjectsParams {
   maxObjectsCount?: number;
   readonly marker?: string;
   readonly prefix?: string;
+}
+
+export interface TransportLocalToS3Params {
+  s3: S3;
+  filePath: string;
+  bucket: string;
+  fileKey: string;
 }
