@@ -11,11 +11,15 @@ webpack.config.js
 
 # tests
 test
+test-placeholder
 jest.config.js
 setupJest.ts
 coverage
 
-# folders for tests
+# env 
+.env.test
+
+# folders for development
 mock
 playground
 

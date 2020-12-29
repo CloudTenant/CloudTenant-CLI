@@ -8,8 +8,12 @@
 
 # test
 coverage
+test-placeholder
 
-# folders for tests
+# env
+.env.test
+
+# folders for development
 mock
 playground
 
