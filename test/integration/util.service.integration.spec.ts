@@ -42,4 +42,21 @@ describe('UtilService - Integration Tests', () => {
       expect(fs.existsSync(dummyFolderPath)).toBeFalsy();
     });
   });
+
+  describe('emptyFileContent()', () => {
+    // *
+    it('Should remove the content of a file(empty the file)', async () => {
+      // ? create the test data
+      const dummyFilePath: string = join(APP_TEST_FOLDER, 'file.txt');
+      fs.writeFileSync(dummyFilePath, 'dummy-text');
+
+      // ? validate that it was created correctly
+      expect(fs.readFileSync(dummyFilePath, 'utf-8')).toBe('dummy-text');
+
+      // ? test the remove function
+      await UtilService.emptyFileContent(dummyFilePath);
+
+      expect(fs.readFileSync(dummyFilePath, 'utf-8')).toBe('');
+    });
+  });
 });
