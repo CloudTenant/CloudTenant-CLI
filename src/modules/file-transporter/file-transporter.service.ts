@@ -12,7 +12,7 @@ import { TransportLocalToS3Params, UploadProgressCallback } from './@types';
 export class Class {
   localToS3(
     payload: TransportLocalToS3Params,
-    cb: UploadProgressCallback,
+    cb?: UploadProgressCallback,
   ): Promise<ManagedUpload.SendData> {
     return new Promise((resolve, reject) => {
       const stream = fs.createReadStream(payload.filePath);
@@ -23,7 +23,9 @@ export class Class {
         })
 
         .on('data', (chunk: string | Buffer) => {
-          cb(chunk.length);
+          if (cb) {
+            cb(chunk.length);
+          }
         });
 
       const params = {
