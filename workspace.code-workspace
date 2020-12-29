@@ -28,7 +28,8 @@
       "aaron-bond.better-comments",
       "coenraads.bracket-pair-colorizer",
       "johnpapa.vscode-peacock",
-      "ritwickdey.liveserver"
+      "ritwickdey.liveserver",
+      "oderwat.indent-rainbow"
     ]
   }
 }
