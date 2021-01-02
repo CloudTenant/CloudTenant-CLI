@@ -91,6 +91,8 @@ jest.mock('dir-fs-utils', () => {
  */
 import { join } from 'path';
 import * as fs from 'fs';
+import * as util from 'util';
+import * as os from 'os';
 
 /**
  * * Types & Constants
@@ -102,7 +104,7 @@ import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
 /**
  * * Errors
  */
-import { BackupLinksError } from '@src/common/errors';
+import { BackupLinksError, UserChange } from '@src/common/errors';
 
 /**
  * * Test Target
@@ -113,6 +115,8 @@ describe('BackupLinksService - Unit Tests', () => {
   afterEach(() => {
     MockedBackupLinksModel.raw = {};
     jest.resetAllMocks();
+
+    jest.spyOn(util, 'promisify').mockImplementation((fn: any): any => fn);
   });
 
   describe('addBackupLink()', () => {
@@ -375,6 +379,62 @@ describe('BackupLinksService - Unit Tests', () => {
         LOG_FILE_MOCK[PROGRESS_LOG_LINE_POS].includes('/my-file.txt'),
       ).toBeTruthy();
       expect(LOG_FILE_MOCK[LOG_FILE_MOCK.length - 1]).toBe(LOG_MARKERS.footer);
+    });
+  });
+
+  describe('getBackupLinkProgress()', () => {
+    // *
+    it('Should throw an error if the log file is not accessible anymore', async () => {
+      MockedBackupLinksModel.raw.id = {
+        logsPath: 'my-path',
+      };
+
+      jest.spyOn(fs, 'access').mockImplementation(() => {
+        throw new Error();
+      });
+
+      await expect(
+        BackupLinksService.getBackupLinkProgress('id'),
+      ).rejects.toThrow(UserChange);
+    });
+
+    // *
+    it('Should throw an error if the log file is not readable anymore', async () => {
+      MockedBackupLinksModel.raw.id = {
+        logsPath: 'my-path',
+      };
+
+      jest.spyOn(fs, 'access').mockImplementation(() => {});
+
+      jest.spyOn(fs, 'readFile').mockImplementation(() => {
+        throw new Error();
+      });
+
+      await expect(
+        BackupLinksService.getBackupLinkProgress('id'),
+      ).rejects.toThrow(UserChange);
+    });
+
+    // *
+    it('Should correctly return the progress', async () => {
+      MockedBackupLinksModel.raw.id = {
+        logsPath: 'my-path',
+      };
+
+      jest.spyOn(fs, 'access').mockImplementation(() => {});
+
+      jest.spyOn(fs, 'readFile').mockImplementation(
+        () => `
+        ================Backup Link started================================${os.EOL} 
+-------------12/30/2020, 5:37:09 PM-------------${os.EOL} 
+100.00% - 134.00 MB / 134.00 MB`,
+      );
+
+      const progress: number = await BackupLinksService.getBackupLinkProgress(
+        'id',
+      );
+
+      expect(progress).toBe(100);
     });
   });
 });

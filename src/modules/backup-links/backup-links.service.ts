@@ -1,12 +1,13 @@
 /**
  * * Dependencies
  */
-import { accessSync } from 'fs';
+import * as fs from 'fs';
 import { DirUtils } from 'dir-fs-utils';
 import * as path from 'path';
 import * as upath from 'upath';
+import * as os from 'os';
 import { S3 } from 'aws-sdk';
-
+import * as util from 'util';
 /**
  * * Services
  */
@@ -24,7 +25,7 @@ import { BackupLinksModel } from './model/backup-links.model';
  * * Types
  */
 import { AddBackupLinkParams, BackupLink, BackupLinkStatus } from './@types';
-import { BackupLinksError } from '@src/common/errors';
+import { BackupLinksError, UserChange } from '@src/common/errors';
 import { LoggerService } from '@src/core/logger/logger.service';
 import {
   S3Credentials,
@@ -35,6 +36,7 @@ import {
  * * Constants
  */
 import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
+import { readFile } from 'fs/promises';
 
 class Class {
   /**
@@ -130,7 +132,7 @@ class Class {
 
     // ? Validate that the backup link path still exists and is accessibe
     try {
-      accessSync(backupLink.localDirPath);
+      fs.accessSync(backupLink.localDirPath);
     } catch (err) {
       await LoggerService.appendToFile(
         backupLink.logsPath,
@@ -219,6 +221,31 @@ class Class {
     BackupLinksModel.raw[backupLinkId].lastBackupTimestamp = Date.now();
 
     await BackupLinksModel.save();
+  }
+
+  /**
+   * * Return the progress as an integer from the log file
+   * @param backupLinkId
+   */
+  async getBackupLinkProgress(backupLinkId: string): Promise<number> {
+    const logsPath: string = BackupLinksModel.raw[backupLinkId].logsPath;
+    try {
+      const access = util.promisify(fs.access);
+      access(logsPath);
+      const readFile = util.promisify(fs.readFile);
+
+      const data: string = await readFile(logsPath, 'utf-8');
+      const lines: string[] = data.split(os.EOL);
+
+      const progressText: string = lines[PROGRESS_LOG_LINE_POS];
+
+      const progress: number = parseInt(
+        progressText.slice(0, progressText.indexOf('%')).trim(),
+      );
+      return progress;
+    } catch (err) {
+      throw new UserChange(`Log file ${logsPath} is not accessible anymore`);
+    }
   }
 }
 
