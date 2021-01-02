@@ -16,6 +16,13 @@ import { DescriptiveList, DescriptiveListRow } from './@types';
 import { GeneralStatusTypes } from '@src/@types/enum';
 
 class Class {
+  /**
+   * * Private variables
+   */
+
+  // ? this map is
+  #overWriteFileMap: Map<string, boolean> = new Map();
+
   constructor() {}
 
   /**
@@ -173,8 +180,15 @@ class Class {
     pos: number,
   ): Promise<boolean> {
     return new Promise((resolve) => {
+      if (this.#overWriteFileMap.get(path)) {
+        return resolve(false);
+      }
+
+      this.#overWriteFileMap.set(path, true);
+
       fs.readFile(path, 'utf-8', (err: NodeJS.ErrnoException, data: string) => {
         if (err) {
+          this.#overWriteFileMap.set(path, false);
           return resolve(false);
         }
         const lines: string[] = data.split(os.EOL);
@@ -182,9 +196,11 @@ class Class {
 
         fs.writeFile(path, lines.join(os.EOL), (err: NodeJS.ErrnoException) => {
           if (err) {
-            resolve(false);
+            this.#overWriteFileMap.set(path, false);
+            return resolve(false);
           }
 
+          this.#overWriteFileMap.set(path, false);
           return resolve(true);
         });
       });
