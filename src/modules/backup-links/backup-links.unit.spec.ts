@@ -29,6 +29,7 @@ jest.mock('@modules/app/app.service', () => {
 const MockedUtilsService: any = {
   generateRandomId: (path: string): void => null,
   emptyFileContent: (path: string): void => null,
+  bytesToSize: (size: number): void => null,
 };
 
 jest.mock('@src/common/util/util.service', () => {
@@ -40,6 +41,8 @@ jest.mock('@src/common/util/util.service', () => {
 // * LoggerService
 const MockedLoggerService: any = {
   appendToFile: (path: string, text: string): void => null,
+  overWriteFileAtPosition: (path: string, msg: string, pos: number): void =>
+    null,
 };
 
 jest.mock('@src/core/logger/logger.service', () => {
@@ -94,7 +97,7 @@ import * as fs from 'fs';
  */
 import { BackupLinkStatus } from './@types';
 
-import { LOG_MARKERS } from './constants';
+import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
 
 /**
  * * Errors
@@ -196,6 +199,7 @@ describe('BackupLinksService - Unit Tests', () => {
       );
     });
 
+    // *
     it('Should prepare the log file: empty the content and log the header and log the error if the local dir to backup is no longer accessible', async () => {
       MockedBackupLinksModel.raw.id = {
         status: BackupLinkStatus.PENDING,
@@ -235,6 +239,7 @@ describe('BackupLinksService - Unit Tests', () => {
       );
     });
 
+    // *
     it('Should correctly compute the file key when no prefix is supplied and use the localDirPath as prefix', async () => {
       MockedBackupLinksModel.raw.id = {
         status: BackupLinkStatus.PENDING,
@@ -259,6 +264,7 @@ describe('BackupLinksService - Unit Tests', () => {
       );
     });
 
+    // *
     it('Should correctly compute the file key when a prefix is supplied', async () => {
       MockedBackupLinksModel.raw.id = {
         status: BackupLinkStatus.PENDING,
@@ -284,6 +290,7 @@ describe('BackupLinksService - Unit Tests', () => {
       );
     });
 
+    // *
     it('Should reset the backup link state in PEDING as update the lastBackupTimestamp once the backup is finished', async () => {
       MockedBackupLinksModel.raw.id = {
         status: BackupLinkStatus.PENDING,
@@ -308,6 +315,66 @@ describe('BackupLinksService - Unit Tests', () => {
         BackupLinkStatus.PENDING,
       );
       expect(MockedBackupLinksModel.raw.id.lastBackupTimestamp).toBe(NOW);
+    });
+
+    // *
+    it('Once the backup is completed, the correct messages should have been logged', async () => {
+      const LOG_FILE_MOCK: string[] = [];
+      MockedBackupLinksModel.raw.id = {
+        status: BackupLinkStatus.PENDING,
+        logsPath: 'my-path',
+        localDirPath: 'local-path',
+        prefix: 'my-prefix',
+      };
+
+      jest
+        .spyOn(MockedLoggerService, 'appendToFile')
+        .mockImplementation((path: string, msg: string) => {
+          LOG_FILE_MOCK.push(msg);
+        });
+
+      jest
+        .spyOn(MockedLoggerService, 'overWriteFileAtPosition')
+        .mockImplementation((path: string, msg: string, pos: number) => {
+          LOG_FILE_MOCK.splice(pos, 1, msg);
+        });
+
+      jest.spyOn(fs, 'accessSync').mockImplementation(() => {});
+
+      jest
+        .spyOn(mockedDirUtils, 'getFolderSize')
+        .mockReturnValue(Promise.resolve(100));
+
+      jest
+        .spyOn(mockedDirUtils, 'listFolderContent')
+        .mockReturnValue(Promise.resolve(['local-path/my-file.txt']));
+
+      jest
+        .spyOn(MockedLoggerService, 'appendToFile')
+        .mockImplementation((path: string, msg: string) => {
+          LOG_FILE_MOCK.push(msg);
+        });
+
+      jest.spyOn(MockedUtilsService, 'bytesToSize').mockReturnValue('Bytes');
+
+      jest
+        .spyOn(MockedS3ManagerService, 'localToS3')
+        .mockImplementation((_: any, cb: any) => {
+          cb(100);
+        });
+
+      await BackupLinksService.startBackup('id');
+
+      expect(LOG_FILE_MOCK[0]).toBe(LOG_MARKERS.header);
+
+      // ? - 1 because the header is on two lines
+      expect(LOG_FILE_MOCK[PROGRESS_LOG_LINE_POS - 1]).toBe(
+        `100.00% - Bytes / Bytes`,
+      );
+      expect(
+        LOG_FILE_MOCK[PROGRESS_LOG_LINE_POS].includes('/my-file.txt'),
+      ).toBeTruthy();
+      expect(LOG_FILE_MOCK[LOG_FILE_MOCK.length - 1]).toBe(LOG_MARKERS.footer);
     });
   });
 });

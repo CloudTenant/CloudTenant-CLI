@@ -3,7 +3,7 @@
  */
 import { accessSync } from 'fs';
 import { DirUtils } from 'dir-fs-utils';
-import { join } from 'path';
+import * as path from 'path';
 import * as upath from 'upath';
 import { S3 } from 'aws-sdk';
 
@@ -34,7 +34,7 @@ import {
 /**
  * * Constants
  */
-import { LOG_MARKERS } from './constants';
+import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
 
 class Class {
   /**
@@ -54,7 +54,7 @@ class Class {
       id: backupLinkId,
       lastBackupTimestamp: 0,
       status: BackupLinkStatus.PENDING,
-      logsPath: join(
+      logsPath: path.join(
         AppService.logsFolderPath,
         `backup-link-${backupLinkId}.log`,
       ),
@@ -113,15 +113,9 @@ class Class {
    * ? will start a backup
    */
   async startBackup(backupLinkId: string) {
-    /**
-     * ? 0. Check if the backup can start
-     * ? 1. Validate that the backup link path still exists and is accessibe
-     * ? 2. Calculate the entire size of local path
-     * ? 3. Return an array with all the files from the folder
-     */
     const backupLink: BackupLink = BackupLinksModel.raw[backupLinkId];
 
-    // ? 0
+    // ? Check if the backup can start
     if (!backupLink) {
       throw new BackupLinksError('There is no backup link with this id');
     }
@@ -134,7 +128,7 @@ class Class {
 
     await LoggerService.appendToFile(backupLink.logsPath, LOG_MARKERS.header);
 
-    // ? 1
+    // ? Validate that the backup link path still exists and is accessibe
     try {
       accessSync(backupLink.localDirPath);
     } catch (err) {
@@ -146,18 +140,19 @@ class Class {
       return;
     }
 
-    // ? 2
+    // ? Calculate the entire size of local path
     const totalBytesSize: number = await DirUtils.getFolderSize(
       backupLink.localDirPath,
     );
 
     let uploadedBytesSize: number = 0;
 
-    // ? 3
+    // ? Return an array with all the files from the folder
     const files: string[] = await DirUtils.listFolderContent(
       backupLink.localDirPath,
     );
 
+    // ? Get the s3 client for this storage
     const s3Credentials: S3Credentials = await StoragesService.getS3Credentials(
       backupLink.storageId,
     );
@@ -194,15 +189,16 @@ class Class {
             const percentage: number =
               (uploadedBytesSize * 100) / totalBytesSize;
 
-            // await LoggerService.overWriteFileAtPosition(
-            //   backupLink.logsPath,
-            //   `${percentage.toFixed(2)}% - ${UtilService.bytesToSize(
-            //     uploadedBytesSize,
-            //   )} / ${UtilService.bytesToSize(totalBytesSize)}`,
-            //   1,
-            // );
+            await LoggerService.overWriteFileAtPosition(
+              backupLink.logsPath,
+              `${percentage.toFixed(2)}% - ${UtilService.bytesToSize(
+                uploadedBytesSize,
+              )} / ${UtilService.bytesToSize(totalBytesSize)}`,
+              PROGRESS_LOG_LINE_POS,
+            );
           },
         );
+
         await LoggerService.appendToFile(
           backupLink.logsPath,
           `✔ File ${objectKey} was uploaded successfuly`,
