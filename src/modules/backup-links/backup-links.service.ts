@@ -24,7 +24,12 @@ import { BackupLinksModel } from './model/backup-links.model';
 /**
  * * Types
  */
-import { AddBackupLinkParams, BackupLink, BackupLinkStatus } from './@types';
+import {
+  AddBackupLinkParams,
+  BackupLink,
+  BackupLinkStatus,
+  StartBackupCb,
+} from './@types';
 import { BackupLinksError, UserChange } from '@src/common/errors';
 import { LoggerService } from '@src/core/logger/logger.service';
 import {
@@ -113,8 +118,10 @@ class Class {
   /**
    * * startBackup()
    * ? will start a backup
+   * @param backupLinkId
+   * @param cb - when the user will start the backup manually, because on windows the process can't be silency detached from the main process the backup will happen in the same process and the progress will be printed in the console
    */
-  async startBackup(backupLinkId: string) {
+  async startBackup(backupLinkId: string, cb?: StartBackupCb) {
     const backupLink: BackupLink = BackupLinksModel.raw[backupLinkId];
 
     // ? Check if the backup can start
@@ -191,13 +198,21 @@ class Class {
             const percentage: number =
               (uploadedBytesSize * 100) / totalBytesSize;
 
+            const progressMsg: string = `${percentage.toFixed(
+              2,
+            )}% - ${UtilService.bytesToSize(
+              uploadedBytesSize,
+            )} / ${UtilService.bytesToSize(totalBytesSize)}`;
+
             await LoggerService.overWriteFileAtPosition(
               backupLink.logsPath,
-              `${percentage.toFixed(2)}% - ${UtilService.bytesToSize(
-                uploadedBytesSize,
-              )} / ${UtilService.bytesToSize(totalBytesSize)}`,
+              progressMsg,
               PROGRESS_LOG_LINE_POS,
             );
+
+            if (cb) {
+              cb(progressMsg);
+            }
           },
         );
 

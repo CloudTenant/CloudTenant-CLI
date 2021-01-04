@@ -19,7 +19,7 @@ import { S3ManagerService } from './core/s3-manager/s3-manager.service';
 /**
  * * Errors
  */
-import { CustomError } from '@common/errors';
+import { BackupLinksError, CustomError } from '@common/errors';
 import { Prompt } from '@core/prompt/prompt';
 
 /**
@@ -395,14 +395,43 @@ backupLinkCommand
     BackupLinksService.removeBackupLink(backupLinkId);
   });
 
-// * 4 Start the job for a backup link
+// * 4 HIDDEN method to start the job for a backup link
 // ? this command will be executed by the processes that will be created
 backupLinkCommand
   .command('start-one', { hidden: true })
   .option('--id <id>')
-  .action((opts) => {
-    BackupLinksService.startBackup(opts.id);
+  .action(async (opts) => {
+    await BackupLinksService.startBackup(opts.id);
   });
+
+// * 5 Public method to manually execute a backup
+backupLinkCommand.command('start').action(async () => {
+  const name: string = await Prompt.chooseFromList(
+    'Choose what backup link you want to execute',
+    BackupLinksService.listBackupLinksByNames(),
+  );
+
+  const backupLinkId: string = BackupLinksService.backupLinksNameToIdMap(name);
+
+  await BackupLinksService.startBackup(backupLinkId, (progress: string) => {
+    process.stdout.write(`${progress}\r`);
+  });
+
+  // ? spawning a sperate process is not an option due to the fact that on windows it will fail to detach it with no shell
+  // ? https://github.com/sindresorhus/execa/issues/433
+  // ? https://github.com/nodejs/node/issues/21825
+
+  // const child: child_process.ChildProcessWithoutNullStreams = child_process.spawn(
+  //   `ctc backup-links start-one`,
+  //   [` --id ${backupLinkId}`],
+
+  //   {
+  //     detached: true,
+  //     // shell: true,
+  //   },
+  // );
+  // child.unref();
+});
 
 // ? init
 program.parse(process.argv);

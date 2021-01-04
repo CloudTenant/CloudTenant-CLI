@@ -13,7 +13,7 @@ export interface BackupLink {
   lastBackupTimestamp: number; // ? default 0
   status: BackupLinkStatus; // ? default is PENDING
   logsPath: string;
-  processPID?: number;
+  processPID?: number; // ? this one will have no effect by default, bcs the porcess can't be silence started in the background, therefore the backup will take place in the same main process; however if this property is present and then it disapears it means that the backup link should stop (in case is in progress)
 }
 
 export interface Links {
