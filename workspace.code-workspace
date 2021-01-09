@@ -29,7 +29,8 @@
       "coenraads.bracket-pair-colorizer",
       "johnpapa.vscode-peacock",
       "ritwickdey.liveserver",
-      "oderwat.indent-rainbow"
+      "oderwat.indent-rainbow",
+      "ms-vscode.atom-keybindings"
     ]
   }
 }
