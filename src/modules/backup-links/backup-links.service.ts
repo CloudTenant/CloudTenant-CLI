@@ -8,6 +8,8 @@ import * as upath from 'upath';
 import * as os from 'os';
 import { S3 } from 'aws-sdk';
 import * as util from 'util';
+const ms = require('ms');
+
 /**
  * * Services
  */
@@ -41,7 +43,6 @@ import {
  * * Constants
  */
 import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
-import { readFile } from 'fs/promises';
 
 class Class {
   /**
@@ -249,7 +250,7 @@ class Class {
     const logsPath: string = BackupLinksModel.raw[backupLinkId].logsPath;
     try {
       const access = util.promisify(fs.access);
-      access(logsPath);
+      await access(logsPath);
       const readFile = util.promisify(fs.readFile);
 
       const data: string = await readFile(logsPath, 'utf-8');
@@ -264,6 +265,21 @@ class Class {
     } catch (err) {
       throw new UserChange(`Log file ${logsPath} is not accessible anymore`);
     }
+  }
+
+  /**
+   * * Based on your backup settings, calculate how long the program should wait (in ms) until it can restart the backup
+   * @param backupLinkId
+   */
+  computeBackupLinkWaitTime(backupLinkId: string): number {
+    const backupLink: BackupLink = BackupLinksModel.raw[backupLinkId];
+
+    const msUntilTheJob: number =
+      backupLink.lastBackupTimestamp +
+      ms(backupLink.jobFrequenceMs) -
+      Date.now();
+
+    return msUntilTheJob > 0 ? msUntilTheJob : 0;
   }
 }
 

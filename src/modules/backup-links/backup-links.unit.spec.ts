@@ -311,7 +311,7 @@ describe('BackupLinksService - Unit Tests', () => {
         .mockReturnValue(Promise.resolve(['local-path/my-file.txt']));
 
       const NOW: number = Date.now();
-      jest.spyOn(Date, 'now').mockImplementation(() => NOW);
+      jest.spyOn(Date, 'now').mockImplementationOnce(() => NOW);
 
       await BackupLinksService.startBackup('id');
 
@@ -435,6 +435,39 @@ describe('BackupLinksService - Unit Tests', () => {
       );
 
       expect(progress).toBe(100);
+    });
+  });
+
+  describe('computeBackupLinkWaitTime()', () => {
+    it('Should corectly compute the time requried to wait until the next job restart', () => {
+      const NOW: any = new Date().getTime();
+
+      jest.spyOn(Date, 'now').mockImplementation(() => NOW);
+
+      MockedBackupLinksModel.raw.id = {
+        lastBackupTimestamp: NOW,
+        jobFrequenceMs: '1h',
+      };
+
+      const time: number = BackupLinksService.computeBackupLinkWaitTime('id');
+
+      expect(time).toBe(3600000);
+    });
+
+    it('If the job should start immediately, then it should return 0 and not a negative number', () => {
+      const YESTERDAY: any = new Date().setDate(new Date().getDate() - 1);
+      const NOW: any = new Date().getTime();
+
+      jest.spyOn(Date, 'now').mockImplementation(() => NOW);
+
+      MockedBackupLinksModel.raw.id = {
+        lastBackupTimestamp: YESTERDAY,
+        jobFrequenceMs: '1h',
+      };
+
+      const time: number = BackupLinksService.computeBackupLinkWaitTime('id');
+
+      expect(time).toBe(0);
     });
   });
 });
