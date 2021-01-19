@@ -142,8 +142,8 @@ startup
 
 // * 3. Do the startup logic
 // ? this will be executed by the startup script
-startup.command('do-logic', { hidden: true }).action(() => {
-  console.log('this process will do the logic');
+startup.command('do-logic', { hidden: true }).action(async () => {
+  await StartupService.startupLogic();
 });
 
 /**
@@ -400,38 +400,52 @@ backupLinkCommand
 backupLinkCommand
   .command('start-one', { hidden: true })
   .option('--id <id>')
+  .option('--force')
   .action(async (opts) => {
-    await BackupLinksService.startBackup(opts.id);
+    await BackupLinksService.startBackup(opts.id, opts.force);
   });
 
 // * 5 Public method to manually execute a backup
-backupLinkCommand.command('start').action(async () => {
-  const name: string = await Prompt.chooseFromList(
-    'Choose what backup link you want to execute',
-    BackupLinksService.listBackupLinksByNames(),
-  );
+backupLinkCommand
+  .command('start')
+  .description('Start a given backup link')
+  .option(
+    '--force',
+    'Start a given backup link even though he is marked as in progress.',
+  )
+  .action(async (opts) => {
+    const name: string = await Prompt.chooseFromList(
+      'Choose what backup link you want to execute',
+      BackupLinksService.listBackupLinksByNames(),
+    );
 
-  const backupLinkId: string = BackupLinksService.backupLinksNameToIdMap(name);
+    const backupLinkId: string = BackupLinksService.backupLinksNameToIdMap(
+      name,
+    );
 
-  await BackupLinksService.startBackup(backupLinkId, (progress: string) => {
-    process.stdout.write(`${progress}\r`);
+    await BackupLinksService.startBackup(
+      backupLinkId,
+      opts.force,
+      (progress: string) => {
+        process.stdout.write(`${progress}\r`);
+      },
+    );
+
+    // ? spawning a sperate process is not an option due to the fact that on windows it will fail to detach it with no shell
+    // ? https://github.com/sindresorhus/execa/issues/433
+    // ? https://github.com/nodejs/node/issues/21825
+
+    // const child: child_process.ChildProcessWithoutNullStreams = child_process.spawn(
+    //   `ctc backup-links start-one`,
+    //   [` --id ${backupLinkId}`],
+
+    //   {
+    //     detached: true,
+    //     // shell: true,
+    //   },
+    // );
+    // child.unref();
   });
-
-  // ? spawning a sperate process is not an option due to the fact that on windows it will fail to detach it with no shell
-  // ? https://github.com/sindresorhus/execa/issues/433
-  // ? https://github.com/nodejs/node/issues/21825
-
-  // const child: child_process.ChildProcessWithoutNullStreams = child_process.spawn(
-  //   `ctc backup-links start-one`,
-  //   [` --id ${backupLinkId}`],
-
-  //   {
-  //     detached: true,
-  //     // shell: true,
-  //   },
-  // );
-  // child.unref();
-});
 
 // ? init
 program.parse(process.argv);

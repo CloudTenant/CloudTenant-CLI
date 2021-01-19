@@ -119,9 +119,10 @@ class Class {
    * * startBackup()
    * ? will start a backup
    * @param backupLinkId
+   * @param force - if force is true -> then start the backup process event though it's marked as active
    * @param cb - when the user will start the backup manually, because on windows the process can't be silency detached from the main process the backup will happen in the same process and the progress will be printed in the console
    */
-  async startBackup(backupLinkId: string, cb?: StartBackupCb) {
+  async startBackup(backupLinkId: string, force?: boolean, cb?: StartBackupCb) {
     const backupLink: BackupLink = BackupLinksModel.raw[backupLinkId];
 
     // ? Check if the backup can start
@@ -129,8 +130,10 @@ class Class {
       throw new BackupLinksError('There is no backup link with this id');
     }
 
-    if (backupLink.status === BackupLinkStatus.ACTIVE) {
-      throw new BackupLinksError('This backup link is already in progress');
+    if (backupLink.status === BackupLinkStatus.ACTIVE && !force) {
+      throw new BackupLinksError(
+        'This backup link is already in progress. Use --force if you are sure you know what you do.',
+      );
     }
 
     await UtilService.emptyFileContent(backupLink.logsPath);
