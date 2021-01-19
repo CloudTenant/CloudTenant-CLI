@@ -1,4 +1,9 @@
 /**
+ * * Dependencies
+ */
+import { join } from 'path';
+
+/**
  * * Mocks
  */
 
@@ -24,11 +29,17 @@ import { StoreService } from './store.service';
 import { ConfigError, PlatformError } from '../../common/errors';
 
 /**
+ * * Test env
+ */
+import { APP_CONSTANTS } from '@src/constants';
+
+/**
  * * Types
  */
 
 describe('StoreService Unit Testing', () => {
-  let service: StoreService = new StoreService('testfile');
+  const STORE_FILE_NAME = 'testfile';
+  let service: StoreService = new StoreService(STORE_FILE_NAME);
 
   const dummyKey: string = 'key';
   const dummyValue: string = 'value';
@@ -69,5 +80,16 @@ describe('StoreService Unit Testing', () => {
     service.delete(dummyKey);
 
     expect(service.get(dummyKey)).toBeUndefined();
+  });
+
+  // *
+  it('It should return the correct path to the store file', () => {
+    expect(service.storeFilePath).toBe(
+      join(
+        process.env.APPDATA,
+        APP_CONSTANTS.appDataFolderName,
+        `${STORE_FILE_NAME}.json`,
+      ),
+    );
   });
 });

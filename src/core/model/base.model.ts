@@ -10,15 +10,19 @@ export abstract class BaseModel {
     private readonly storeKey: string,
   ) {}
 
-  public async save(value: any): Promise<boolean> {
+  async save(value: any): Promise<boolean> {
     return this.storeService.set(this.storeKey, value);
   }
 
-  public delete() {
+  delete() {
     this.storeService.delete(this.storeKey);
   }
 
-  public get(): any {
+  get(): any {
     return this.storeService.get(this.storeKey);
+  }
+
+  get dbFilePath(): string {
+    return this.storeService.storeFilePath;
   }
 }

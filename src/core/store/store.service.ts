@@ -45,11 +45,11 @@ export class StoreService {
     this.#data = this.#parseStoreFile(this.#storeFilePath);
   }
 
-  public get(key: string): any {
+  get(key: string): any {
     return this.#data[key];
   }
 
-  public set(key: string, val: any): Promise<boolean> {
+  set(key: string, val: any): Promise<boolean> {
     return new Promise((resolve: any) => {
       this.#data[key] = val;
       writeFile(this.#storeFilePath, JSON.stringify(this.#data), (err) => {
@@ -61,7 +61,11 @@ export class StoreService {
     });
   }
 
-  public delete(key: string): void {
+  delete(key: string): void {
     delete this.#data[key];
+  }
+
+  get storeFilePath():string {
+    return this.#storeFilePath;
   }
 }
