@@ -30,10 +30,6 @@ class Model extends BaseModel {
   public async save(): Promise<boolean> {
     return super.save(this.#modelData);
   }
-
-  public delete() {
-    super.delete();
-  }
 }
 
 const BackupLinksModel = new Model(

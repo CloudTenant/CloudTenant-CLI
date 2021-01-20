@@ -2,7 +2,8 @@
  * * Dependencies
  */
 import { join } from 'path';
-import { readFileSync, writeFile } from 'fs';
+import * as fs from 'fs';
+import * as util from 'util';
 
 /**
  * * Types
@@ -23,11 +24,21 @@ export class StoreService {
   #storeFilePath: string;
   #data: KeyValuePair;
 
-  #parseStoreFile = (filePath: string): KeyValuePair => {
+  #parseStoreFileSync = (filePath: string): KeyValuePair => {
     try {
-      return JSON.parse(readFileSync(filePath, { encoding: 'utf-8' }));
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     } catch (error) {
       // ? the file will not exist in the beginning
+      return {};
+    }
+  };
+
+  #parseStoreFileASync = async (filePath: string): Promise<KeyValuePair> => {
+    try {
+      const readFile = util.promisify(fs.readFile);
+      const fileText: string = await readFile(filePath, 'utf-8');
+      return JSON.parse(fileText);
+    } catch (err) {
       return {};
     }
   };
@@ -42,7 +53,7 @@ export class StoreService {
       APP_CONSTANTS.appDataFolderName,
       `${storeFileName}.json`,
     );
-    this.#data = this.#parseStoreFile(this.#storeFilePath);
+    this.#data = this.#parseStoreFileSync(this.#storeFilePath);
   }
 
   get(key: string): any {
@@ -52,7 +63,7 @@ export class StoreService {
   set(key: string, val: any): Promise<boolean> {
     return new Promise((resolve: any) => {
       this.#data[key] = val;
-      writeFile(this.#storeFilePath, JSON.stringify(this.#data), (err) => {
+      fs.writeFile(this.#storeFilePath, JSON.stringify(this.#data), (err) => {
         if (err) {
           throw new PlatformError(`Can't write to ${this.#storeFilePath}`);
         }
@@ -61,11 +72,13 @@ export class StoreService {
     });
   }
 
-  delete(key: string): void {
-    delete this.#data[key];
+  // * read the data from the db file and update the private var
+  async update() {
+    this.#data = await this.#parseStoreFileASync(this.#storeFilePath);
   }
 
-  get storeFilePath():string {
+  // * return the path to the local file used as database
+  get storeFilePath(): string {
     return this.#storeFilePath;
   }
 }

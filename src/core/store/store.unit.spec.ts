@@ -1,22 +1,24 @@
 /**
- * * Dependencies
- */
-import { join } from 'path';
-
-/**
  * * Mocks
  */
 
-const mockedFs = {
-  readFileSync: () => 's',
-  writeFile: (a: any, b: any, cb: Function) => cb(),
-};
+// const mockedFs = {
+//   readFileSync: () => 's',
+//   writeFile: (a: any, b: any, cb: Function) => cb(),
+// };
 
-jest.mock('fs', () => {
-  return mockedFs;
-});
+// jest.mock('fs', () => {
+//   return mockedFs;
+// });
 
-const fThatReturnError = (a: any, b: any, cb: Function) => cb('err');
+// const fThatReturnError = (a: any, b: any, cb: Function) => cb('err');
+
+/**
+ * * Dependencies
+ */
+import { join } from 'path';
+import * as util from 'util';
+import * as fs from 'fs';
 
 /**
  * * Services
@@ -39,57 +41,93 @@ import { APP_CONSTANTS } from '@src/constants';
 
 describe('StoreService Unit Testing', () => {
   const STORE_FILE_NAME = 'testfile';
-  let service: StoreService = new StoreService(STORE_FILE_NAME);
+  let SERVICE: StoreService;
 
-  const dummyKey: string = 'key';
-  const dummyValue: string = 'value';
+  // const dummyKey: string = 'key';
+  // const dummyValue: string = 'value';
 
+  beforeAll(() => {
+    jest
+      .spyOn(fs, 'readFileSync')
+      .mockImplementation((filePath: string, options: any) => '{}');
+
+    SERVICE = new StoreService(STORE_FILE_NAME);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // *
   it('Should throw error if the instance is constructed without the service name', () => {
     expect(() => new StoreService(undefined)).toThrow(ConfigError);
   });
 
   // *
   it('It should be able to set the data', async () => {
-    const res: boolean = await service.set(dummyKey, dummyValue);
+    // jest.spyOn(util, 'promisify').mockImplementation((fn: any): any => fn);
+    // jest
+    //   .spyOn(fs, 'writeFile')
+    //   .mockImplementation((a: any, b: any, cb: Function) => cb());
+    // jest
+    //   .spyOn(fs, 'readFileSync')
+    //   .mockImplementation((filePath: string, options: any) => 's');
+
+    jest
+      .spyOn(fs, 'readFileSync')
+      .mockImplementation((filePath: string, options: any) => '{}');
+
+    jest
+      .spyOn(fs, 'writeFile')
+      .mockImplementation((a: any, b: any, cb: Function) => cb());
+
+    const res: boolean = await SERVICE.set('dummyKey', 'dummyValue');
 
     expect(res).toBe(true);
   });
 
   // *
   it('It should be able to catch the error', async () => {
-    const originalF: any = mockedFs.writeFile;
-    mockedFs.writeFile = fThatReturnError;
+    jest
+      .spyOn(fs, 'readFileSync')
+      .mockImplementation((filePath: string, options: any) => '{}');
+
+    jest
+      .spyOn(fs, 'writeFile')
+      .mockImplementation((a: any, b: any, cb: Function) => cb('err'));
 
     try {
-      await service.set(dummyKey, dummyValue);
+      await SERVICE.set('dummyKey', 'dummyValue');
     } catch (err) {
       expect(err).toBeDefined();
       expect(err instanceof PlatformError).toBeTruthy();
     }
-
-    mockedFs.writeFile = originalF;
   });
 
   // *
   it('It should be able to get the data', async () => {
-    expect(service.get(dummyKey)).toBe(dummyValue);
-  });
-
-  // *
-  it('It should be able to delete the data', () => {
-    service.delete(dummyKey);
-
-    expect(service.get(dummyKey)).toBeUndefined();
+    expect(SERVICE.get('dummyKey')).toBe('dummyValue');
   });
 
   // *
   it('It should return the correct path to the store file', () => {
-    expect(service.storeFilePath).toBe(
+    expect(SERVICE.storeFilePath).toBe(
       join(
         process.env.APPDATA,
         APP_CONSTANTS.appDataFolderName,
         `${STORE_FILE_NAME}.json`,
       ),
     );
+  });
+
+  it('Should be able to update the data', async () => {
+    jest.spyOn(util, 'promisify').mockImplementation((fn: any): any => fn);
+    jest
+      .spyOn(fs, 'readFile')
+      .mockImplementation(() => JSON.stringify({ key: 'value' }));
+
+    await SERVICE.update();
+
+    expect(SERVICE.get('key')).toBe('value');
   });
 });

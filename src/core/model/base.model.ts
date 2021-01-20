@@ -14,10 +14,6 @@ export abstract class BaseModel {
     return this.storeService.set(this.storeKey, value);
   }
 
-  delete() {
-    this.storeService.delete(this.storeKey);
-  }
-
   get(): any {
     return this.storeService.get(this.storeKey);
   }
