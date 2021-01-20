@@ -65,14 +65,6 @@ describe('StoreService Unit Testing', () => {
 
   // *
   it('It should be able to set the data', async () => {
-    // jest.spyOn(util, 'promisify').mockImplementation((fn: any): any => fn);
-    // jest
-    //   .spyOn(fs, 'writeFile')
-    //   .mockImplementation((a: any, b: any, cb: Function) => cb());
-    // jest
-    //   .spyOn(fs, 'readFileSync')
-    //   .mockImplementation((filePath: string, options: any) => 's');
-
     jest
       .spyOn(fs, 'readFileSync')
       .mockImplementation((filePath: string, options: any) => '{}');
@@ -87,7 +79,7 @@ describe('StoreService Unit Testing', () => {
   });
 
   // *
-  it('It should be able to catch the error', async () => {
+  it("It should be able to catch the error if can't write to file", async () => {
     jest
       .spyOn(fs, 'readFileSync')
       .mockImplementation((filePath: string, options: any) => '{}');
@@ -120,6 +112,7 @@ describe('StoreService Unit Testing', () => {
     );
   });
 
+  // *
   it('Should be able to update the data', async () => {
     jest.spyOn(util, 'promisify').mockImplementation((fn: any): any => fn);
     jest
@@ -127,6 +120,18 @@ describe('StoreService Unit Testing', () => {
       .mockImplementation(() => JSON.stringify({ key: 'value' }));
 
     await SERVICE.update();
+
+    expect(SERVICE.get('key')).toBe('value');
+  });
+
+  // *
+  it("Should catch the error if it can't update the data", async () => {
+    jest.spyOn(util, 'promisify').mockImplementation((fn: any): any => fn);
+    jest.spyOn(fs, 'readFile').mockImplementation(() => {
+      throw new Error();
+    });
+
+    await expect(SERVICE.update()).rejects.toThrow(PlatformError);
 
     expect(SERVICE.get('key')).toBe('value');
   });

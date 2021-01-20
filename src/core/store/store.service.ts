@@ -24,6 +24,7 @@ export class StoreService {
   #storeFilePath: string;
   #data: KeyValuePair;
 
+  // * used in constructor
   #parseStoreFileSync = (filePath: string): KeyValuePair => {
     try {
       return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -34,13 +35,9 @@ export class StoreService {
   };
 
   #parseStoreFileASync = async (filePath: string): Promise<KeyValuePair> => {
-    try {
-      const readFile = util.promisify(fs.readFile);
-      const fileText: string = await readFile(filePath, 'utf-8');
-      return JSON.parse(fileText);
-    } catch (err) {
-      return {};
-    }
+    const readFile = util.promisify(fs.readFile);
+    const fileText: string = await readFile(filePath, 'utf-8');
+    return JSON.parse(fileText);
   };
 
   constructor(storeFileName: string) {
@@ -74,7 +71,14 @@ export class StoreService {
 
   // * read the data from the db file and update the private var
   async update() {
-    this.#data = await this.#parseStoreFileASync(this.#storeFilePath);
+    try {
+      this.#data = await this.#parseStoreFileASync(this.#storeFilePath);
+      return true;
+    } catch (err) {
+      throw new PlatformError(
+        `Can't read the db file - ${this.#storeFilePath}`,
+      );
+    }
   }
 
   // * return the path to the local file used as database
