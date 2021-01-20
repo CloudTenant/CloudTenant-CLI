@@ -27,8 +27,13 @@ class Model extends BaseModel {
     Object.assign(this.#modelData, super.get());
   }
 
-  public async save(): Promise<boolean> {
+  async save(): Promise<boolean> {
     return super.save(this.#modelData);
+  }
+
+  async update(): Promise<void> {
+    await super.update();
+    this.#modelData = super.get();
   }
 }
 

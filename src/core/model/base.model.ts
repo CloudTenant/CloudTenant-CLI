@@ -18,6 +18,11 @@ export abstract class BaseModel {
     return this.storeService.get(this.storeKey);
   }
 
+  // ? update the model
+  async update(): Promise<void> {
+    await this.storeService.update();
+  }
+
   get dbFilePath(): string {
     return this.storeService.storeFilePath;
   }
