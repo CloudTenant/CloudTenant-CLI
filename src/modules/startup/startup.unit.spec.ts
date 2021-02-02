@@ -5,6 +5,7 @@
 // * BackupLinksModel
 const MockedBackupLinksModel: any = {
   raw: {},
+  update: () => '',
 };
 
 jest.mock('@modules/backup-links/model/backup-links.model', () => {
@@ -28,6 +29,10 @@ jest.mock('@modules/backup-links/backup-links.service', () => {
  * * Dependencies
  */
 import * as child_process from 'child_process';
+
+import * as tree_kill from 'tree-kill';
+jest.mock('tree-kill');
+const mockedTreeKill = tree_kill as jest.MockedFunction<typeof tree_kill>;
 
 /**
  * * Test Requirments
@@ -119,7 +124,7 @@ describe('StartupService', () => {
     it('Should start a backup process for the backups marked with the status ACTIVE(zombie) and schedule the backup links marked as PENDING', async () => {
       jest
         .spyOn(MockedBackupLinksService, 'computeBackupLinkWaitTime')
-        .mockImplementation((id) => 2);
+        .mockImplementationOnce((id) => 2);
 
       MockedBackupLinksModel.raw = {
         id: {
@@ -207,6 +212,135 @@ describe('StartupService', () => {
       await StartupService.startupLogic();
 
       expect(setTimeout).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('handleBackupLinksDbUpdate()', () => {
+    let SPY_SPAWN: jest.SpyInstance;
+
+    afterEach(() => {
+      MockedBackupLinksModel.raw = {};
+      StartupService.clearTestingHelper();
+
+      jest.clearAllMocks();
+      jest.clearAllTimers();
+    });
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    beforeAll(() => {
+      SPY_SPAWN = jest
+        .spyOn(child_process, 'spawn')
+        .mockImplementation(
+          (command: string, args: readonly string[], options: any): any => {
+            return { pid: 1000 };
+          },
+        );
+
+      mockedTreeKill.mockImplementation(() => null);
+    });
+
+    // *
+    it('If the backup link is removed and it was active then stop process', async () => {
+      MockedBackupLinksModel.raw.myId = {
+        status: BackupLinkStatus.ACTIVE,
+        processPID: 23,
+      };
+
+      jest.spyOn(MockedBackupLinksModel, 'update').mockImplementation(() => {
+        MockedBackupLinksModel.raw = {};
+      });
+
+      await StartupService.handleBackupLinksDbUpdate();
+
+      expect(mockedTreeKill).toBeCalledTimes(1);
+      expect(clearTimeout).toBeCalledTimes(0);
+    });
+
+    // *
+    it('If the backup link is removed and it was pending then stop the scheduled process (setTimeout)', async () => {
+      MockedBackupLinksModel.raw.myId = {
+        status: BackupLinkStatus.PENDING,
+      };
+
+      jest.spyOn(MockedBackupLinksModel, 'update').mockImplementation(() => {
+        MockedBackupLinksModel.raw = {};
+      });
+
+      await StartupService.handleBackupLinksDbUpdate();
+
+      expect(mockedTreeKill).toBeCalledTimes(0);
+      expect(clearTimeout).toBeCalledTimes(1);
+    });
+
+    // *
+    it('If the backup link process is stoped then re-schedule it', async () => {
+      const NOW: any = new Date().getTime();
+
+      jest.spyOn(Date, 'now').mockImplementation(() => NOW);
+
+      MockedBackupLinksModel.raw.myId = {
+        status: BackupLinkStatus.ACTIVE,
+        lastBackupTimestamp: NOW - 1000 * 60 * 60,
+        jobFrequenceMs: '1h',
+        processPID: 12,
+      };
+
+      jest.spyOn(MockedBackupLinksModel, 'update').mockImplementation(() => {
+        MockedBackupLinksModel.raw.myId = {
+          status: BackupLinkStatus.ACTIVE,
+          lastBackupTimestamp: NOW,
+          jobFrequenceMs: '1h',
+        };
+      });
+
+      await StartupService.handleBackupLinksDbUpdate();
+
+      expect(mockedTreeKill).toHaveBeenCalledTimes(0);
+      expect(clearTimeout).toHaveBeenCalledTimes(0);
+
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+    });
+
+    it('The rescheduled process should to run after the correct time', async () => {
+      const NOW: any = new Date().getTime();
+      jest.spyOn(Date, 'now').mockImplementation(() => NOW);
+
+      jest
+        .spyOn(MockedBackupLinksService, 'computeBackupLinkWaitTime')
+        .mockImplementationOnce((id) => 1000 * 60 * 60);
+
+      MockedBackupLinksModel.raw.myId = {
+        status: BackupLinkStatus.ACTIVE,
+        lastBackupTimestamp: NOW - 1000 * 60 * 60,
+        jobFrequenceMs: '1h',
+        processPID: 12,
+      };
+
+      jest.spyOn(MockedBackupLinksModel, 'update').mockImplementation(() => {
+        MockedBackupLinksModel.raw.myId = {
+          status: BackupLinkStatus.ACTIVE,
+          lastBackupTimestamp: NOW,
+          jobFrequenceMs: '1h',
+        };
+      });
+
+      await StartupService.handleBackupLinksDbUpdate();
+
+      expect(mockedTreeKill).toHaveBeenCalledTimes(0);
+      expect(clearTimeout).toHaveBeenCalledTimes(0);
+
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+
+      jest.runTimersToTime(1000 * 60 * 60);
+
+      expect(SPY_SPAWN).toHaveBeenCalledTimes(1);
+      expect(SPY_SPAWN.mock.calls[0][0]).toBe(
+        'ctc backup-links start-one --force',
+      );
+      expect(SPY_SPAWN.mock.calls[0][1]).toEqual([`--id myId`]);
     });
   });
 });

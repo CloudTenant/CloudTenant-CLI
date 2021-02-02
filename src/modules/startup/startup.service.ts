@@ -9,7 +9,7 @@ import * as tree_kill from 'tree-kill';
  * * Types
  */
 import { AllowedPlatforms } from './@types/enum';
-import { BackupLinkStatus } from '../backup-links/@types';
+import { BackupLink, BackupLinkStatus, Links } from '../backup-links/@types';
 
 /**
  * * Errors
@@ -80,6 +80,29 @@ class Class {
     );
 
     return `del "${target}"`;
+  };
+
+  // * Schedule a backup to be executed for a given backpulink based on it's id
+  #scheduleBackup = (backupLinkId: string): any => {
+    const msUntilTheJob: number = BackupLinksService.computeBackupLinkWaitTime(
+      backupLinkId,
+    );
+
+    // ? execute the job
+    const timeoutId: NodeJS.Timeout = setTimeout(() => {
+      const child: child_process.ChildProcessWithoutNullStreams = child_process.spawn(
+        `ctc backup-links start-one --force`,
+        [`--id ${backupLinkId}`],
+        {
+          shell: true,
+        },
+      );
+
+      this.#ongoingProcesses.set(backupLinkId, child);
+      this.#scheduledProcesses.delete(backupLinkId);
+    }, msUntilTheJob);
+
+    this.#scheduledProcesses.set(backupLinkId, timeoutId);
   };
 
   /**
@@ -160,7 +183,6 @@ class Class {
       );
 
       this.#ongoingProcesses.set(id, child);
-      // console.log('will stop', tree_kill(child.pid));
     });
 
     // ? schedule the other backup links
@@ -173,25 +195,44 @@ class Class {
     );
 
     idsOfPendingBackups.forEach((id: string, i) => {
-      const msUntilTheJob: number = BackupLinksService.computeBackupLinkWaitTime(
-        id,
-      );
+      this.#scheduleBackup(id);
+    });
+  }
 
-      // ? execute the job
-      const timeoutId: NodeJS.Timeout = setTimeout(() => {
-        const child: child_process.ChildProcessWithoutNullStreams = child_process.spawn(
-          `ctc backup-links start-one --force`,
-          [`--id ${id}`],
-          {
-            shell: true,
-          },
-        );
+  /**
+   * * Triggered each time the BackupLinksModel.dbFilePath gets updated
+   */
+  async handleBackupLinksDbUpdate() {
+    // ? make a copy of the curret values
+    const modelTmp: Links = Object.assign({}, BackupLinksModel.raw);
 
-        this.#ongoingProcesses.set(id, child);
-        this.#scheduledProcesses.delete(id);
-      }, msUntilTheJob);
+    await BackupLinksModel.update();
 
-      this.#scheduledProcesses.set(id, timeoutId);
+    // ? loop trough each backup link and check what was changed
+    Object.keys(modelTmp).forEach((id: string) => {
+      const previousValue: BackupLink = modelTmp[id];
+      const updatedValue: BackupLink = BackupLinksModel.raw[id];
+
+      // ? check if the backup link was removed entirely
+      if (previousValue && !updatedValue) {
+        if (previousValue.processPID) {
+          this.#ongoingProcesses.delete(id);
+          tree_kill(previousValue.processPID);
+        } else {
+          clearTimeout(this.#scheduledProcesses.get(id));
+          this.#scheduledProcesses.delete(id);
+        }
+
+        return;
+      }
+
+      // ? check if previous was ACTIVE and now is not
+      if (previousValue.processPID && !updatedValue.processPID) {
+        this.#ongoingProcesses.delete(id);
+
+        // ? reschedule the process
+        this.#scheduleBackup(id);
+      }
     });
   }
 }

@@ -4,7 +4,7 @@
 import { program } from 'commander';
 import * as ora from 'ora';
 import { S3 } from 'aws-sdk';
-import { accessSync } from 'fs';
+import { accessSync, watchFile } from 'fs';
 
 /**
  * * Services
@@ -36,6 +36,7 @@ import { DescriptiveList } from './core/logger/@types';
 import { AddBackupLinkParams } from './modules/backup-links/@types';
 import { InputForBackupLink } from './core/prompt/@types/interface';
 import { S3Credentials } from './core/s3-manager/@types';
+import { BackupLinksModel } from './modules/backup-links/model/backup-links.model';
 
 // ? injected by webpack at build time
 declare const __VERSION__: any;
@@ -143,6 +144,10 @@ startup
 // * 3. Do the startup logic
 // ? this will be executed by the startup script
 startup.command('do-logic', { hidden: true }).action(async () => {
+  watchFile(BackupLinksModel.dbFilePath, async () => {
+    await StartupService.handleBackupLinksDbUpdate();
+  });
+
   await StartupService.startupLogic();
 });
 
