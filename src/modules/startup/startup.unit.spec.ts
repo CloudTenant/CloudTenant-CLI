@@ -32,7 +32,7 @@ import * as child_process from 'child_process';
 /**
  * * Test Requirments
  */
-import { PlatformError } from '@common/errors';
+import { PlatformError } from '../../common/errors/index';
 import { AllowedPlatforms } from './@types/enum';
 import { StartupService } from './startup.service';
 import { BackupLinkStatus } from '../backup-links/@types';
@@ -94,7 +94,7 @@ describe('StartupService', () => {
       SPY_SPAWN = jest
         .spyOn(child_process, 'spawn')
         .mockImplementation(
-          (command: string, args: string[], options: any): any => {
+          (command: string, args: readonly string[], options: any): any => {
             return { pid: 1000 };
           },
         );

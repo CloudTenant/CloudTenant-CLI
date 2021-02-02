@@ -43,6 +43,7 @@
   },
   "homepage": "https://github.com/GeorgianStan/CloudTenant-CLI#readme",
   "devDependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "@types/inquirer": "^7.3.1",
     "@types/jest": "^26.0.19",
     "@types/keytar": "^4.4.2",
