@@ -6,6 +6,7 @@ export const USER_MESSAGES = {
 
   // ? used when a startup script is generated
   unknownPlatform: 'We are sorry, but your operating system is not supported',
+  failedToGenerateStartupCommand: 'The startup script could not be generated',
 };
 
 export const APP_CONSTANTS = {

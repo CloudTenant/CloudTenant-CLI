@@ -1,6 +1,7 @@
 /**
- * * Mockes
+ * * Dependencies
  */
+import * as fs from 'fs';
 
 // * BackupLinksModel
 const MockedBackupLinksModel: any = {
@@ -56,6 +57,10 @@ describe('StartupService', () => {
       '%s startup script can be generated',
       (n) => {
         global.process.platform = n;
+
+        jest
+          .spyOn(fs, 'writeFileSync')
+          .mockImplementation((a: any, b: any) => {});
 
         expect(StartupService.generateStartupScript()).toBeDefined();
       },

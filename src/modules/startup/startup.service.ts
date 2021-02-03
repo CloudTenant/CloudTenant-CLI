@@ -4,6 +4,7 @@
 import { join } from 'path';
 import * as child_process from 'child_process';
 import * as tree_kill from 'tree-kill';
+import { writeFileSync } from 'fs';
 
 /**
  * * Types
@@ -20,7 +21,7 @@ import { PlatformError } from '@common/errors';
  * * Constants
  */
 import { USER_MESSAGES } from '@src/constants';
-import { STARTUP_CONSTANTS } from './constants';
+import { STARTUP_CONSTANTS, generateContentForVbsFile } from './constants';
 
 /**
  * * Model
@@ -48,26 +49,34 @@ class Class {
    * * Private methods
    */
 
-  // *
+  /**
+   * * For Windows, the startup script can't be moved directly in the startup folder, because it will open a shell once execuded
+   * ? To overcome this problem, a .vbs file is generated and this file will be moved to the startup folder. The purpose of this vbs file is simply to call the Windows startup script
+   * @param startupScriptPath - path the windows startup script to be executed
+   */
   #generateScriptForWin = (): string => {
-    const startupFolderPath: string = join(
+    const scriptsFolderPath: string = join(__dirname, '..', 'scripts');
+
+    // ? generate the vbs file
+    const vbsFileName: string = 'launch_bat.vbs';
+
+    const vbsFileContent: string = generateContentForVbsFile(
+      join(scriptsFolderPath, STARTUP_CONSTANTS.wInScriptName),
+    );
+    const vbsFilePath: string = join(scriptsFolderPath, vbsFileName);
+
+    writeFileSync(vbsFilePath, vbsFileContent);
+
+    // ? move the vbs file in the startup folder
+    const destinationPath: string = join(
       process.env.APPDATA,
       `Microsoft/Windows/Start Menu/Programs/Startup`,
-    );
-    const destination: string = join(
-      startupFolderPath,
       STARTUP_CONSTANTS.wOutScriptName,
     );
 
-    const target: string = join(
-      __dirname,
-      '..',
-      'scripts',
-      STARTUP_CONSTANTS.wInScriptName,
-    );
+    // ? generate the command that the user will need to run to move the script to the startup folder
 
-    const command: string = `copy "${target}" "${destination}"`;
-
+    const command: string = `copy "${vbsFilePath}" "${destinationPath}"`;
     return command;
   };
 
@@ -133,9 +142,12 @@ class Class {
     const dic: any = {};
     dic[AllowedPlatforms.win32] = this.#generateScriptForWin;
 
-    const scriptToRun: string = dic[isKnownPlatform].call(this);
-
-    return scriptToRun;
+    try {
+      const scriptToRun: string = dic[isKnownPlatform].call(this);
+      return scriptToRun;
+    } catch (err) {
+      throw new PlatformError(USER_MESSAGES.failedToGenerateStartupCommand);
+    }
   }
 
   /**
