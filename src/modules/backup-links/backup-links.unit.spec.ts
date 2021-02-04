@@ -91,6 +91,7 @@ jest.mock('dir-fs-utils', () => {
  */
 import { join } from 'path';
 import * as fs from 'fs';
+import { promises as fsPromise } from 'fs';
 import * as util from 'util';
 import * as os from 'os';
 
@@ -144,23 +145,29 @@ describe('BackupLinksService - Unit Tests', () => {
 
   describe('removeBackupLink()', () => {
     //*
-    it('Should remove backup-link', async () => {
+    it("Should remove backup-link and it's logs file", async () => {
       const spySave = jest.spyOn(MockedBackupLinksModel, 'save');
+      const mockUnlink = jest
+        .spyOn(fsPromise, 'unlink')
+        .mockImplementationOnce(() => null);
 
       MockedBackupLinksModel.raw.id = {};
 
-      expect(MockedBackupLinksModel.raw.id).toBeDefined();
       await BackupLinksService.removeBackupLink('id');
-      expect(MockedBackupLinksModel.raw.id).not.toBeDefined();
 
+      expect(MockedBackupLinksModel.raw.id).not.toBeDefined();
       expect(spySave).toHaveBeenCalled();
+      expect(mockUnlink).toHaveBeenCalled();
     });
   });
 
   describe('removeBackupLinksAfterStorage()', () => {
     //*
-    it('Should remove all backup-links from a given storage', async () => {
+    it('Should remove all backup-links from a given storage and their logs file', async () => {
       const spySave = jest.spyOn(MockedBackupLinksModel, 'save');
+      const mockUnlink = jest
+        .spyOn(fsPromise, 'unlink')
+        .mockImplementationOnce(() => null);
 
       MockedBackupLinksModel.raw = {
         backup1: {
@@ -174,14 +181,15 @@ describe('BackupLinksService - Unit Tests', () => {
         },
       };
 
-      await BackupLinksService.removeBackupLinksAfterStorage('storage1');
+      await BackupLinksService.removeBackupLinksFromStorage('storage1');
 
       expect(MockedBackupLinksModel.raw.backup1).not.toBeDefined();
       expect(MockedBackupLinksModel.raw.backup2).not.toBeDefined();
 
       expect(MockedBackupLinksModel.raw.backup3).toBeDefined();
 
-      expect(spySave).toHaveBeenCalled();
+      expect(spySave).toHaveBeenCalledTimes(1);
+      expect(mockUnlink).toHaveBeenCalledTimes(2);
     });
   });
 

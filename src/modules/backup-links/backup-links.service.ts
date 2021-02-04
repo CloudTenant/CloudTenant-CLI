@@ -2,6 +2,7 @@
  * * Dependencies
  */
 import * as fs from 'fs';
+import { promises as fsPromise } from 'fs';
 import { DirUtils } from 'dir-fs-utils';
 import * as path from 'path';
 import * as upath from 'upath';
@@ -46,13 +47,32 @@ import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
 
 class Class {
   /**
+   * * Private methods
+   */
+
+  /**
+   * * Remove the logs file of a given backup link
+   * @param backupLinkId
+   */
+  #removeLogsFile = async (backupLinkId: string): Promise<boolean> => {
+    try {
+      await fsPromise.unlink(BackupLinksModel.raw[backupLinkId].logsPath);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  /**
+   * * Public methods
+   */
+
+  /**
    * * Add a new backup link in user.backupLinks property
    * @param payload *
    * @param existingLinkId * used to update an existing backup link
    */
-  public async addBackupLink(
-    payload: AddBackupLinkParams,
-  ): Promise<BackupLink> {
+  async addBackupLink(payload: AddBackupLinkParams): Promise<BackupLink> {
     const backupLinkId: string = UtilService.generateRandomId(
       Object.keys(BackupLinksModel.raw),
     );
@@ -79,20 +99,27 @@ class Class {
    * @param id - backup link id
    */
   async removeBackupLink(id: string): Promise<boolean> {
+    await this.#removeLogsFile(id);
+
     delete BackupLinksModel.raw[id];
+
     await BackupLinksModel.save();
     return true;
   }
 
   /**
    * * Remove all backup links that are associated with a given storage
-   * @param id
+   * @param storageId
    */
-  async removeBackupLinksAfterStorage(storageId: string): Promise<boolean> {
-    Object.keys(BackupLinksModel.raw).forEach((linkId: string) => {
-      BackupLinksModel.raw[linkId].storageId === storageId &&
-        delete BackupLinksModel.raw[linkId];
-    });
+  async removeBackupLinksFromStorage(storageId: string): Promise<boolean> {
+    Promise.all(
+      Object.keys(BackupLinksModel.raw).map(async (linkId: string) => {
+        if (BackupLinksModel.raw[linkId].storageId === storageId) {
+          await this.#removeLogsFile(linkId);
+          delete BackupLinksModel.raw[linkId];
+        }
+      }),
+    );
 
     await BackupLinksModel.save();
     return true;
