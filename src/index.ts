@@ -264,13 +264,14 @@ storageCommand
       'Are you sure you want to delete this storage? Please note that all processes that are linked with it will be terminated!',
     );
 
-    // TODO -> stop all running processes
-
     if (!confirm) {
       return;
     }
 
-    StoragesService.removeStorage(storageId);
+    // ? remove the associated backup links
+    await BackupLinksService.removeBackupLinksAfterStorage(storageId);
+
+    await StoragesService.removeStorage(storageId);
   });
 
 /**
@@ -392,7 +393,6 @@ backupLinkCommand
       return;
     }
 
-    // TODO -> stop all running processes
     const backupLinkId: string = BackupLinksService.backupLinksNameToIdMap(
       selectedName,
     );
