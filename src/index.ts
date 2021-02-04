@@ -268,9 +268,6 @@ storageCommand
       return;
     }
 
-    // ? remove the associated backup links
-    await BackupLinksService.removeBackupLinksFromStorage(storageId);
-
     await StoragesService.removeStorage(storageId);
   });
 

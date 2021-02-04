@@ -60,6 +60,17 @@ jest.mock('@core/s3-manager/s3-manager.service', () => {
   };
 });
 
+// * BackupLinksService
+const MockedBackupLinksService: any = {
+  removeBackupLinksFromStorage: (storageId: string): void => null,
+};
+
+jest.mock('@modules/backup-links/backup-links.service', () => {
+  return {
+    BackupLinksService: MockedBackupLinksService,
+  };
+});
+
 /**
  * * Dependencies
  */
@@ -169,9 +180,13 @@ describe('StoragesService - Unit Tests', () => {
 
   describe('removeStorage()', () => {
     //*
-    it("Should remove a storage and it's credentials", async () => {
+    it("Should remove a storage, it's credentials and the associated backup links", async () => {
       const spyModelSave = jest.spyOn(MockedStoragesModel, 'save');
       const spyKeytarDelete = jest.spyOn(MockedKeytarService, 'delete');
+      const spyBackupLinksRemove = jest.spyOn(
+        MockedBackupLinksService,
+        'removeBackupLinksFromStorage',
+      );
 
       MockedStoragesModel.raw.id = {
         accessInfo: {
@@ -181,12 +196,14 @@ describe('StoragesService - Unit Tests', () => {
         },
       };
 
-      expect(MockedStoragesModel.raw.id).toBeDefined();
       await StoragesService.removeStorage('id');
+
       expect(MockedStoragesModel.raw.id).not.toBeDefined();
 
       expect(spyModelSave).toHaveBeenCalled();
       expect(spyKeytarDelete).toHaveBeenCalledTimes(3);
+
+      expect(spyBackupLinksRemove).toHaveBeenCalledWith('id');
     });
   });
 

@@ -9,6 +9,7 @@ import { StoragesModel } from './model/storages.model';
 import { KeytarService } from '@core/keytar/keytar.service';
 import { UtilService } from '@src/common/util/util.service';
 import { S3ManagerService } from '@core/s3-manager/s3-manager.service';
+import { BackupLinksService } from '../backup-links/backup-links.service';
 
 /**
  * * Types
@@ -154,6 +155,10 @@ class Class {
 
     delete StoragesModel.raw[id];
     await StoragesModel.save();
+
+    // ? remove the associated backup links
+    await BackupLinksService.removeBackupLinksFromStorage(id);
+
     return true;
   }
 
