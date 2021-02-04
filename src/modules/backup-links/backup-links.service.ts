@@ -85,6 +85,20 @@ class Class {
   }
 
   /**
+   * * Remove all backup links that are associated with a given storage
+   * @param id
+   */
+  async removeBackupLinksAfterStorage(storageId: string): Promise<boolean> {
+    Object.keys(BackupLinksModel.raw).forEach((linkId: string) => {
+      BackupLinksModel.raw[linkId].storageId === storageId &&
+        delete BackupLinksModel.raw[linkId];
+    });
+
+    await BackupLinksModel.save();
+    return true;
+  }
+
+  /**
    * * listBackupLinksByNames()
    * ? Return an array with all the names of the available backup links
    */

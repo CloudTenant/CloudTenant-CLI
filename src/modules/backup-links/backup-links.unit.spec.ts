@@ -157,6 +157,34 @@ describe('BackupLinksService - Unit Tests', () => {
     });
   });
 
+  describe('removeBackupLinksAfterStorage()', () => {
+    //*
+    it('Should remove all backup-links from a given storage', async () => {
+      const spySave = jest.spyOn(MockedBackupLinksModel, 'save');
+
+      MockedBackupLinksModel.raw = {
+        backup1: {
+          storageId: 'storage1',
+        },
+        backup2: {
+          storageId: 'storage1',
+        },
+        backup3: {
+          storageId: 'storage2',
+        },
+      };
+
+      await BackupLinksService.removeBackupLinksAfterStorage('storage1');
+
+      expect(MockedBackupLinksModel.raw.backup1).not.toBeDefined();
+      expect(MockedBackupLinksModel.raw.backup2).not.toBeDefined();
+
+      expect(MockedBackupLinksModel.raw.backup3).toBeDefined();
+
+      expect(spySave).toHaveBeenCalled();
+    });
+  });
+
   describe('listBackupLinksByNames()', () => {
     //*
     it('Should return the linkName for each backup-link', () => {
