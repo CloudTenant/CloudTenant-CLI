@@ -1,16 +1,20 @@
 /**
  * * Dependencies
  */
-import { existsSync, mkdirSync, rmdirSync } from 'fs';
 import { join } from 'path';
-import { LoggerService } from '@core/logger/logger.service';
-import { StoreService } from '@core/store/store.service';
 
 /**
  * * Constants
  */
 import { APP_CONSTANTS } from '@src/constants';
 import { UtilService } from '@src/common/util/util.service';
+
+/**
+ * * Services
+ */
+import { StoreService } from '@core/store/store.service';
+import { LoggerService } from '@core/logger/logger.service';
+import { StoragesService } from '../storages/storages.service';
 
 export class Class {
   #appFolderPath: string = join(
@@ -58,7 +62,9 @@ export class Class {
    * * removeAppData
    * ? this function will delete all the data that this application created
    */
-  removeAppData(): boolean {
+  async removeAppData(): Promise<boolean> {
+    await StoragesService.removeAllStorages();
+
     const removedSuccessfully: boolean = UtilService.removeFolder(
       this.#appFolderPath,
     );
