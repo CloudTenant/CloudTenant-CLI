@@ -103,8 +103,7 @@ program
       return;
     }
 
-    // TODO -> stop all running processes
-    const removedSuccessfully: boolean = AppService.removeAppData();
+    const removedSuccessfully: boolean = await AppService.removeAppData();
 
     if (removedSuccessfully) {
       LoggerService.success('All data was removed');
