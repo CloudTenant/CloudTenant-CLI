@@ -112,7 +112,7 @@ class Class {
    * @param storageId
    */
   async removeBackupLinksFromStorage(storageId: string): Promise<boolean> {
-    Promise.all(
+    await Promise.all(
       Object.keys(BackupLinksModel.raw).map(async (linkId: string) => {
         if (BackupLinksModel.raw[linkId].storageId === storageId) {
           await this.#removeLogsFile(linkId);
