@@ -220,10 +220,21 @@ class Class {
 
     await BackupLinksModel.update();
 
+    // ? create an unique array with all the ids (both after the update and before)
+    const allIds: string[] = Array.from(
+      new Set([...Object.keys(modelTmp), ...Object.keys(BackupLinksModel.raw)]),
+    );
+
     // ? loop trough each backup link and check what was changed
-    Object.keys(modelTmp).forEach((id: string) => {
+    allIds.forEach((id: string) => {
       const previousValue: BackupLink = modelTmp[id];
       const updatedValue: BackupLink = BackupLinksModel.raw[id];
+
+      // ? check if a backup link was added
+      if (!previousValue && updatedValue) {
+        this.#scheduleBackup(id);
+        return;
+      }
 
       // ? check if the backup link was removed entirely
       if (previousValue && !updatedValue) {

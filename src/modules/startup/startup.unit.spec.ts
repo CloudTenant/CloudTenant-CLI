@@ -111,7 +111,7 @@ describe('StartupService', () => {
     });
 
     // *
-    it('Should use the correct command to start the backup processes ', async () => {
+    it('Should use the correct command to start the backup processes', async () => {
       MockedBackupLinksModel.raw.id = {
         status: BackupLinkStatus.ACTIVE,
       };
@@ -248,7 +248,26 @@ describe('StartupService', () => {
     });
 
     // *
-    it('If the backup link is removed and it was active then stop process', async () => {
+    it('If a new backup link was added, then it should be scheduled for execution', async () => {
+      MockedBackupLinksModel.raw = {};
+
+      jest.spyOn(MockedBackupLinksModel, 'update').mockImplementation(() => {
+        MockedBackupLinksModel.raw.myId = {
+          status: BackupLinkStatus.PENDING,
+        };
+      });
+
+      jest
+        .spyOn(MockedBackupLinksService, 'computeBackupLinkWaitTime')
+        .mockImplementationOnce((id) => 2);
+
+      await StartupService.handleBackupLinksDbUpdate();
+
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+    });
+
+    // *
+    it('If the backup link is removed and it was active then stop the related process', async () => {
       MockedBackupLinksModel.raw.myId = {
         status: BackupLinkStatus.ACTIVE,
         processPID: 23,
@@ -309,7 +328,7 @@ describe('StartupService', () => {
       expect(setTimeout).toHaveBeenCalledTimes(1);
     });
 
-    it('The rescheduled process should to run after the correct time', async () => {
+    it('The rescheduled process should  run after the correct time', async () => {
       const NOW: any = new Date().getTime();
       jest.spyOn(Date, 'now').mockImplementation(() => NOW);
 
