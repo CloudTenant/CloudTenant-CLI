@@ -163,6 +163,19 @@ class Class {
   }
 
   /**
+   * * Remove all the storages
+   */
+  async removeAllStorages(): Promise<boolean> {
+    await Promise.all(
+      Object.keys(StoragesModel.raw).map(async (id: string) => {
+        await this.removeStorage(id);
+      }),
+    );
+
+    return true;
+  }
+
+  /**
    * * storageNameToIdMap() 
    * ? return the associated id for a storage name
    @param name - unique storage name

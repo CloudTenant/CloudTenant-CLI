@@ -207,6 +207,46 @@ describe('StoragesService - Unit Tests', () => {
     });
   });
 
+  describe('removeAllStorages()', () => {
+    //*
+    it('Should remove all storage, their credentials and the associated backup links', async () => {
+      const spyModelSave = jest.spyOn(MockedStoragesModel, 'save');
+      const spyKeytarDelete = jest.spyOn(MockedKeytarService, 'delete');
+      const spyBackupLinksRemove = jest.spyOn(
+        MockedBackupLinksService,
+        'removeBackupLinksFromStorage',
+      );
+
+      MockedStoragesModel.raw = {
+        id: {
+          accessInfo: {
+            endpointKeytarIdentifier: '',
+            accessKeyIdKeytarIdentifier: '',
+            secretAccessKeyKeytarIdentifier: '',
+          },
+        },
+        id2: {
+          accessInfo: {
+            endpointKeytarIdentifier: '',
+            accessKeyIdKeytarIdentifier: '',
+            secretAccessKeyKeytarIdentifier: '',
+          },
+        },
+      };
+
+      await StoragesService.removeAllStorages();
+
+      expect(MockedStoragesModel.raw.id).not.toBeDefined();
+      expect(MockedStoragesModel.raw.id2).not.toBeDefined();
+
+      expect(spyModelSave).toHaveBeenCalled();
+      expect(spyKeytarDelete).toHaveBeenCalledTimes(6);
+
+      expect(spyBackupLinksRemove).toHaveBeenNthCalledWith(1, 'id');
+      expect(spyBackupLinksRemove).toHaveBeenNthCalledWith(2, 'id2');
+    });
+  });
+
   describe('listStoragesByNames()', () => {
     //*
     it('Should return the storageName for each storage', () => {
