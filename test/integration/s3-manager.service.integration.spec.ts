@@ -10,9 +10,14 @@ import * as path from 'path';
 /**
  * * Test Data
  */
-const TEST_CONFIG = parse(
-  fs.readFileSync(path.resolve(process.cwd(), '.env.test')),
-);
+
+let TEST_CONFIG: any;
+
+try {
+  TEST_CONFIG = parse(
+    fs.readFileSync(path.resolve(process.cwd(), '.env.test')),
+  );
+} catch {}
 
 const testData = (key: string) => process.env[key] || TEST_CONFIG[key];
 
