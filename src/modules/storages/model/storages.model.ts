@@ -33,7 +33,7 @@ class Model extends BaseModel {
 
   async update(): Promise<void> {
     await super.update();
-    this.#modelData = super.get();
+    this.#modelData = super.get() ?? {};
   }
 }
 

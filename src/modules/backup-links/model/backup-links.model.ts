@@ -24,7 +24,7 @@ class Model extends BaseModel {
   constructor(store: StoreService, storeKey: string) {
     super(store, storeKey);
 
-    this.#modelData = super.get();
+    this.#modelData = super.get() ?? {};
   }
 
   async save(): Promise<boolean> {
@@ -33,7 +33,7 @@ class Model extends BaseModel {
 
   async update(): Promise<void> {
     await super.update();
-    this.#modelData = super.get();
+    this.#modelData = super.get() ?? {};
   }
 }
 
