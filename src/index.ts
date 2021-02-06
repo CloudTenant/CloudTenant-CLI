@@ -49,21 +49,21 @@ const APP_WAS_INITIALIZED = AppService.checkIfAppWasInitialiezd();
 process.on('uncaughtException', (error: Error | CustomError) => {
   // ? if is a custom error show the msg
   if ((<CustomError>error).isCustom) {
-    LoggerService.error(error.message);
+    LoggerService.error(error.message + '\n');
     return;
   }
 
-  LoggerService.error(USER_MESSAGES.unknownErr);
+  LoggerService.error(USER_MESSAGES.unknownErr + '\n');
 });
 
-process.on('unhandledRejection', function (reason: any) {
+process.on('unhandledRejection', function (error: Error | CustomError) {
   // ? if reason is from Error object and is custom
-  if (reason instanceof CustomError && reason.isCustom) {
-    LoggerService.error(reason.message);
+  if ((<CustomError>error).isCustom) {
+    LoggerService.error(error.message + '\n');
     return;
   }
 
-  LoggerService.error(USER_MESSAGES.unknownErr);
+  LoggerService.error(USER_MESSAGES.unknownErr + '\n');
 });
 
 /**
@@ -103,7 +103,7 @@ program
     if (removedSuccessfully) {
       LoggerService.success('All data was removed');
       LoggerService.warn(
-        'If you had the startup script running, please also run the startup remove command',
+        '\nIf you had the startup script running, please also run the startup remove command',
       );
     }
   });
@@ -141,6 +141,10 @@ startup
 // * 3. Do the startup logic
 // ? this will be executed by the startup script
 startup.command('do-logic', { hidden: true }).action(async () => {
+  if (!APP_WAS_INITIALIZED) {
+    return;
+  }
+
   watchFile(BackupLinksModel.dbFilePath, async () => {
     await StartupService.handleBackupLinksDbUpdate();
   });
@@ -401,6 +405,10 @@ backupLinkCommand
   .option('--id <id>')
   .option('--force')
   .action(async (opts) => {
+    if (!APP_WAS_INITIALIZED) {
+      return;
+    }
+
     await BackupLinksService.startBackup(opts.id, opts.force);
   });
 
