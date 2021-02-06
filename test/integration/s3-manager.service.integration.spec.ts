@@ -14,6 +14,8 @@ const TEST_CONFIG = parse(
   fs.readFileSync(path.resolve(process.cwd(), '.env.test')),
 );
 
+const testData = (key: string) => process.env[key] || TEST_CONFIG[key];
+
 /**
  * * Test Target
  */
@@ -41,14 +43,14 @@ describe('FileTransporterService - Integration Tests', () => {
 
       s3Providers.forEach(async (provider: string) => {
         const s3 = new S3({
-          endpoint: TEST_CONFIG[provider + '_endpoint'],
-          accessKeyId: TEST_CONFIG[provider + '_accessKeyId'],
-          secretAccessKey: TEST_CONFIG[provider + '_secretAccessKey'],
+          endpoint: testData(provider + '_endpoint'),
+          accessKeyId: testData(provider + '_accessKeyId'),
+          secretAccessKey: testData(provider + '_secretAccessKey'),
         });
 
         await s3
           .deleteObject({
-            Bucket: TEST_CONFIG[provider + '_bucket'],
+            Bucket: testData(provider + '_bucket'),
             Key: FILE_NAME,
           })
           .promise();
@@ -61,12 +63,12 @@ describe('FileTransporterService - Integration Tests', () => {
       'Should upload a file to %s and monitor the progress',
       async (provider) => {
         const s3 = new S3({
-          endpoint: TEST_CONFIG[provider + '_endpoint'],
-          accessKeyId: TEST_CONFIG[provider + '_accessKeyId'],
-          secretAccessKey: TEST_CONFIG[provider + '_secretAccessKey'],
+          endpoint: testData(provider + '_endpoint'),
+          accessKeyId: testData(provider + '_accessKeyId'),
+          secretAccessKey: testData(provider + '_secretAccessKey'),
         });
 
-        const bucket: string = TEST_CONFIG[provider + '_bucket'];
+        const bucket: string = testData(provider + '_bucket');
 
         const spy = jest.fn();
 
