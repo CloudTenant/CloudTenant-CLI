@@ -13,7 +13,7 @@ import { ANSI_COLORS } from './constants';
  * * Types
  */
 import { DescriptiveList, DescriptiveListRow } from './@types';
-import { GeneralStatusTypes } from '@src/@types/enum';
+import { GeneralStatusTypes } from '../../@types/enum';
 
 class Class {
   /**

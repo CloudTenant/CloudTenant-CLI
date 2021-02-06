@@ -15,6 +15,7 @@ jobs:
       - run: npm ci
       - run: npm run build:prod
       - run: npm run test:unit
+      - run: npm run test:integration
         env:
           do_endpoint: ${{ secrets.do_endpoint }}
           do_secretAccessKey: ${{ secrets.do_secretAccessKey }}
