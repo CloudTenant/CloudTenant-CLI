@@ -33,18 +33,21 @@ describe('FileTransporterService - Integration Tests', () => {
 
   describe('localToS3()', () => {
     const FILE_NAME = 'file-to-upload.txt';
+    const TEST_PLACEHOLDER_FOLDER = 'test-placeholder';
     const DUMMY_FILE_PATH = path.resolve(
       process.cwd(),
-      'test-placeholder',
+      TEST_PLACEHOLDER_FOLDER,
       `./${FILE_NAME}`,
     );
 
     beforeAll(() => {
+      fs.mkdirSync(path.resolve(process.cwd(), TEST_PLACEHOLDER_FOLDER));
       fs.writeFileSync(DUMMY_FILE_PATH, 'dummy-text');
     });
 
     afterAll(() => {
       fs.rmSync(DUMMY_FILE_PATH);
+      fs.rmdirSync(path.resolve(process.cwd(), TEST_PLACEHOLDER_FOLDER));
 
       s3Providers.forEach(async (provider: string) => {
         const s3 = new S3({
