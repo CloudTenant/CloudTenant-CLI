@@ -170,7 +170,7 @@ startup.command('do-logic', { hidden: true }).action(async () => {
 const storageCommand = program
   .command('storages', { hidden: !APP_WAS_INITIALIZED })
   .description('list all your s3 storages')
-  .option('-s, --status', 'List all storages and their related status')
+  .option('-s, --status', 'list all storages and their related status')
   .action(async (opts) => {
     const storages: string[] = StoragesService.listStoragesByNames();
 
@@ -298,7 +298,7 @@ const backupLinkCommand = program
     const backupLinks: string[] = BackupLinksService.listBackupLinksByNames();
 
     if (!backupLinks.length) {
-      LoggerService.warn('You have no backup links for now. Please add one!');
+      LoggerService.warn('You have no backup links for now. Please add one');
       return;
     }
 
