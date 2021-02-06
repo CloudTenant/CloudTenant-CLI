@@ -48,13 +48,10 @@ const APP_WAS_INITIALIZED = AppService.checkIfAppWasInitialiezd();
  */
 process.on('uncaughtException', (error: Error | CustomError) => {
   // ? if is a custom error show the msg
-  //@ts-ignore
-  if (error.isCustom) {
+  if ((<CustomError>error).isCustom) {
     LoggerService.error(error.message);
     return;
   }
-
-  console.log(error);
 
   LoggerService.error(USER_MESSAGES.unknownErr);
 });
@@ -65,8 +62,6 @@ process.on('unhandledRejection', function (reason: any) {
     LoggerService.error(reason.message);
     return;
   }
-
-  console.log(reason);
 
   LoggerService.error(USER_MESSAGES.unknownErr);
 });
@@ -107,6 +102,9 @@ program
 
     if (removedSuccessfully) {
       LoggerService.success('All data was removed');
+      LoggerService.warn(
+        'If you had the startup script running, please also run the startup remove command',
+      );
     }
   });
 
