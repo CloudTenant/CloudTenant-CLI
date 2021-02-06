@@ -75,8 +75,10 @@ program.version(__VERSION__);
  * * Init & Remove command
  */
 program
-  .command('init')
-  .description('Initialize CloudTenant CLI tool')
+  .command('init', {
+    hidden: APP_WAS_INITIALIZED,
+  })
+  .description('initialize CloudTenant CLI tool')
   .action(async () => {
     const initSuccessfully: boolean = await AppService.initApp();
     if (initSuccessfully) {
@@ -88,7 +90,7 @@ program
   .command('remove-data', {
     hidden: !APP_WAS_INITIALIZED,
   })
-  .description('Remove all the data created by the Cloud Tenant CLI tool')
+  .description('remove all the data created by the Cloud Tenant CLI tool')
   .action(async () => {
     const confirm: boolean = await Prompt.confirmAction(
       'Are you sure you want to delete all data and stop all processes?',
@@ -114,9 +116,17 @@ program
 
 // * 1. Generetate starup script
 const startup = program
-  .command('startup', { hidden: !APP_WAS_INITIALIZED })
-  .description('Generate a startup script')
+  .command('startup', {
+    hidden: !APP_WAS_INITIALIZED,
+  })
+  .description('generate a startup script')
   .action(() => {
+    if (!BackupLinksService.listBackupLinksByNames().length) {
+      LoggerService.warn(
+        "You have no backup links at this time. The startup script won't take effect right now, only when you start adding the first backup link.\n\n",
+      );
+    }
+
     const script: string = StartupService.generateStartupScript();
 
     LoggerService.log([
@@ -128,7 +138,7 @@ const startup = program
 // * 2. Unspartup
 startup
   .command('remove', { hidden: !APP_WAS_INITIALIZED })
-  .description('Remove the startup script')
+  .description('remove the startup script')
   .action(() => {
     const script: string = StartupService.generateUnStartupScript();
 
@@ -159,7 +169,7 @@ startup.command('do-logic', { hidden: true }).action(async () => {
 // * 1. List storages
 const storageCommand = program
   .command('storages', { hidden: !APP_WAS_INITIALIZED })
-  .description('List all your s3 storages')
+  .description('list all your s3 storages')
   .option('-s, --status', 'List all storages and their related status')
   .action(async (opts) => {
     const storages: string[] = StoragesService.listStoragesByNames();
@@ -208,7 +218,7 @@ const storageCommand = program
 // * 2. Add Storage
 storageCommand
   .command('add', { hidden: !APP_WAS_INITIALIZED })
-  .description('Add a new S3 storage')
+  .description('add a new S3 type storage space')
   .action(async () => {
     const confirm: boolean = await Prompt.confirmAction(
       "You will be prompted to add your S3 credentials. These credentials will be stored in your system's keychain. Do you want to proceed?",
@@ -244,7 +254,7 @@ storageCommand
       APP_WAS_INITIALIZED && StoragesService.listStoragesByNames().length
     ),
   })
-  .description('Remove a storage')
+  .description('remove a storage')
   .action(async () => {
     const storages: string[] = StoragesService.listStoragesByNames();
 
@@ -280,10 +290,10 @@ storageCommand
 const backupLinkCommand = program
   .command('backup-links', {
     hidden: !(
-      APP_WAS_INITIALIZED && BackupLinksService.listBackupLinksByNames().length
+      APP_WAS_INITIALIZED && StoragesService.listStoragesByNames().length
     ),
   })
-  .description('List all your backup links')
+  .description('list all your backup links')
   .action(() => {
     const backupLinks: string[] = BackupLinksService.listBackupLinksByNames();
 
@@ -302,7 +312,7 @@ backupLinkCommand
       APP_WAS_INITIALIZED && StoragesService.listStoragesByNames().length
     ),
   })
-  .description('Add a new backup link')
+  .description('add a new backup link')
   .action(async () => {
     const storages: string[] = StoragesService.listStoragesByNames();
 
@@ -369,7 +379,7 @@ backupLinkCommand
       APP_WAS_INITIALIZED && BackupLinksService.listBackupLinksByNames().length
     ),
   })
-  .description('Remove a backup link')
+  .description('remove a backup link')
   .action(async () => {
     const backupLinks: string[] = BackupLinksService.listBackupLinksByNames();
 
@@ -409,18 +419,36 @@ backupLinkCommand
       return;
     }
 
+    const backupLinks: string[] = BackupLinksService.listBackupLinksByNames();
+
+    if (!backupLinks.length) {
+      LoggerService.warn('Your backup links list is empty.');
+      return;
+    }
+
     await BackupLinksService.startBackup(opts.id, opts.force);
   });
 
 // * 5 Public method to manually execute a backup
 backupLinkCommand
-  .command('start')
-  .description('Start a given backup link')
+  .command('start', {
+    hidden: !(
+      APP_WAS_INITIALIZED && BackupLinksService.listBackupLinksByNames().length
+    ),
+  })
+  .description('start a given backup link')
   .option(
     '--force',
     'Start a given backup link even though he is marked as in progress.',
   )
   .action(async (opts) => {
+    const backupLinks: string[] = BackupLinksService.listBackupLinksByNames();
+
+    if (!backupLinks.length) {
+      LoggerService.warn('Your backup links list is empty.');
+      return;
+    }
+
     const name: string = await Prompt.chooseFromList(
       'Choose what backup link you want to execute',
       BackupLinksService.listBackupLinksByNames(),
