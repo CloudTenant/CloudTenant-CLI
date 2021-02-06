@@ -1,5 +1,5 @@
 <div style="text-align:center">
-    <img src='https://github.com/GeorgianStan/CloudTenant-CLI/raw/0.x/static/logo.png' alt='logo'>
+    <img src='https://github.com/CloudTenant/CloudTenant-CLI/raw/master/static/logo.png' alt='logo'>
 </div>
 
 **CTC** (Cloud Tenat CLI) is a backup tool that you can use to save your local files in **S3** cloud storages. It works by creating backup links to a specific local path and S3 storage.
