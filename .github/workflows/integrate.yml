@@ -1,11 +1,11 @@
-name: Node Continuous Integration
+name: CTC Test Workflow
 
 on:
   pull_request:
     branches: [master]
 
 jobs:
-  test_pull_request:
+  windows_test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,7 +13,6 @@ jobs:
         with:
           node-version: 14
       - run: npm ci
-      - run: npm run build:prod
       - run: npm run test:unit
       - run: npm run test:integration
         env:
@@ -21,4 +20,20 @@ jobs:
           do_secretAccessKey: ${{ secrets.do_secretAccessKey }}
           do_accessKeyId: ${{ secrets.do_accessKeyId }}
           do_bucket: ${{ secrets.do_bucket }}
-          APPDATA:
+          APPDATA: ./
+  macos_test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - run: npm ci
+      - run: npm run test:unit
+      - run: npm run test:integration
+        env:
+          do_endpoint: ${{ secrets.do_endpoint }}
+          do_secretAccessKey: ${{ secrets.do_secretAccessKey }}
+          do_accessKeyId: ${{ secrets.do_accessKeyId }}
+          do_bucket: ${{ secrets.do_bucket }}
+          APPDATA: ./
