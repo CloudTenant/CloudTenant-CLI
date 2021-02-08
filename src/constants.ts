@@ -3,6 +3,8 @@ export const USER_MESSAGES = {
   // ? used by global err filter
   unknownErr:
     'An unknown error occurred. Please submit an issue if this impacts you',
+  failedToInitialize:
+    'The application could not initialize because the HOME path is missing. If you encounter this problem, please report it',
 
   // ? used when a startup script is generated
   unknownPlatform: 'We are sorry, but your operating system is not supported',
