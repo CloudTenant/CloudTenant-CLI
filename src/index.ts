@@ -9,9 +9,9 @@ import { accessSync, watchFile } from 'fs';
 /**
  * * Services
  */
-import { StartupService } from '@modules/startup/startup.service';
-import { LoggerService } from '@core/logger/logger.service';
 import { AppService } from '@modules/app/app.service';
+import { LoggerService } from '@core/logger/logger.service';
+import { StartupService } from '@modules/startup/startup.service';
 import { StoragesService } from './modules/storages/storages.service';
 import { BackupLinksService } from './modules/backup-links/backup-links.service';
 import { S3ManagerService } from './core/s3-manager/s3-manager.service';
@@ -19,7 +19,7 @@ import { S3ManagerService } from './core/s3-manager/s3-manager.service';
 /**
  * * Errors
  */
-import { BackupLinksError, CustomError } from '@common/errors';
+import { CustomError, PlatformError } from '@common/errors';
 import { Prompt } from '@core/prompt/prompt';
 
 /**
@@ -37,11 +37,6 @@ import { AddBackupLinkParams } from './modules/backup-links/@types';
 import { InputForBackupLink } from './core/prompt/@types/interface';
 import { S3Credentials } from './core/s3-manager/@types';
 import { BackupLinksModel } from './modules/backup-links/model/backup-links.model';
-
-// ? injected by webpack at build time
-declare const __VERSION__: any;
-
-const APP_WAS_INITIALIZED = AppService.checkIfAppWasInitialiezd();
 
 /**
  * * Global errors filters
@@ -65,6 +60,15 @@ process.on('unhandledRejection', function (error: Error | CustomError) {
 
   LoggerService.error(USER_MESSAGES.unknownErr + '\n');
 });
+
+if (!process.env.APPDATA || !process.env.HOME) {
+  throw new PlatformError(USER_MESSAGES.failedToInitialize);
+}
+
+// ? injected by webpack at build time
+declare const __VERSION__: any;
+
+const APP_WAS_INITIALIZED = AppService.checkIfAppWasInitialiezd();
 
 /**
  * * Commands
