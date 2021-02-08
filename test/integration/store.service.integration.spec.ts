@@ -57,8 +57,6 @@ describe('StoreService - Integration Tests', () => {
   });
 
   it("Should create the store file when trying to save something in the store and the file doesn't already exists", async () => {
-    expect(fs.existsSync(STORE_PATH)).toBeFalsy();
-
     const myStore = new StoreService(STORE_NAME);
     await myStore.set('dummy-key', 'dummy-val');
 
