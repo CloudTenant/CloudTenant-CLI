@@ -3,7 +3,10 @@
  */
 
 import { APP_CONSTANTS } from '../../src/constants';
-APP_CONSTANTS.appDataFolderName = 'CloudTenantCLI-Testing';
+APP_CONSTANTS.appDataFolderPath = APP_CONSTANTS.appDataFolderPath.replace(
+  'CloudTenantCLI',
+  'CloudTenantCLI-Testing',
+);
 
 /**
  * * Dependencies
@@ -17,10 +20,7 @@ import { join } from 'path';
 import { StoreService } from '../../src/core/store/store.service';
 
 describe('StoreService - Integration Tests', () => {
-  const APP_TEST_FOLDER: string = join(
-    process.env.APPDATA,
-    APP_CONSTANTS.appDataFolderName,
-  );
+  const APP_TEST_FOLDER: string = APP_CONSTANTS.appDataFolderPath;
 
   const STORE_NAME = 'dummy-store';
   const STORE_PATH: string = join(APP_TEST_FOLDER, STORE_NAME + '.json');

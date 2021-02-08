@@ -104,11 +104,7 @@ describe('StoreService Unit Testing', () => {
   // *
   it('It should return the correct path to the store file', () => {
     expect(SERVICE.storeFilePath).toBe(
-      join(
-        process.env.APPDATA,
-        APP_CONSTANTS.appDataFolderName,
-        `${STORE_FILE_NAME}.json`,
-      ),
+      join(APP_CONSTANTS.appDataFolderPath, `${STORE_FILE_NAME}.json`),
     );
   });
 

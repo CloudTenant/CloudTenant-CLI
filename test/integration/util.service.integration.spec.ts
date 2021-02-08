@@ -1,4 +1,13 @@
 /**
+ * * Test env
+ */
+import { APP_CONSTANTS } from '../../src/constants';
+APP_CONSTANTS.appDataFolderPath = APP_CONSTANTS.appDataFolderPath.replace(
+  'CloudTenantCLI',
+  'CloudTenantCLI-Testing',
+);
+
+/**
  * * Dependencies
  */
 import * as fs from 'fs';
@@ -10,10 +19,7 @@ import { join } from 'path';
 import { UtilService } from '../../src/common/util/util.service';
 
 describe('UtilService - Integration Tests', () => {
-  const APP_TEST_FOLDER: string = join(
-    process.env.APPDATA,
-    'CloudTenantCLI-Testing',
-  );
+  const APP_TEST_FOLDER: string = APP_CONSTANTS.appDataFolderPath;
 
   beforeAll(() => {
     fs.mkdirSync(APP_TEST_FOLDER);

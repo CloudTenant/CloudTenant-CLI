@@ -1,3 +1,8 @@
+/**
+ * * Dependencies
+ */
+import { join } from 'path';
+
 // ? This constant is used for messages that appear in more than one place
 export const USER_MESSAGES = {
   // ? used by global err filter
@@ -12,8 +17,12 @@ export const USER_MESSAGES = {
 };
 
 export const APP_CONSTANTS = {
-  appDataFolderName: 'CloudTenantCLI', // ? folder to be created in %APPDATA%
-  logsFolder: 'logs', // ? folder that will be created inside appDataFolderName
+  appDataFolderPath:
+    process.platform === 'win32'
+      ? join(process.env.APPDATA, 'CloudTenantCLI')
+      : join(process.env.HOME, '.CloudTenantCLI'),
+
+  logsFolder: 'logs', // ? folder that will be created inside appDataFolderPath
   appName: 'CloudTenantCLI', // ? application name that will be used in keytar to store credentials
   mainDbFileName: 'preferences',
   storagesDbFileName: 'storages',

@@ -105,7 +105,7 @@ import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
 /**
  * * Errors
  */
-import { BackupLinksError, UserChange } from '@src/common/errors';
+import { BackupLinksError, UserChange } from '../../common/errors';
 
 /**
  * * Test Target
@@ -369,12 +369,14 @@ describe('BackupLinksService - Unit Tests', () => {
 
       jest
         .spyOn(MockedLoggerService, 'appendToFile')
+        //@ts-ignore
         .mockImplementation((path: string, msg: string) => {
           LOG_FILE_MOCK.push(msg);
         });
 
       jest
         .spyOn(MockedLoggerService, 'overWriteFileAtPosition')
+        //@ts-ignore
         .mockImplementation((path: string, msg: string, pos: number) => {
           LOG_FILE_MOCK.splice(pos, 1, msg);
         });
@@ -391,6 +393,7 @@ describe('BackupLinksService - Unit Tests', () => {
 
       jest
         .spyOn(MockedLoggerService, 'appendToFile')
+        //@ts-ignore
         .mockImplementation((path: string, msg: string) => {
           LOG_FILE_MOCK.push(msg);
         });
@@ -459,12 +462,12 @@ describe('BackupLinksService - Unit Tests', () => {
 
       jest.spyOn(fs, 'access').mockImplementation(() => {});
 
-      jest.spyOn(fs, 'readFile').mockImplementation(
-        () => `
-        ================Backup Link started================================${os.EOL} 
--------------12/30/2020, 5:37:09 PM-------------${os.EOL} 
-100.00% - 134.00 MB / 134.00 MB`,
-      );
+      jest
+        .spyOn(fs, 'readFile')
+        .mockImplementation(
+          () =>
+            `================Backup Link started================================${os.EOL}-------------12/30/2020, 5:37:09 PM-------------${os.EOL} 100.00% - 134.00 MB / 134.00 MB`,
+        );
 
       const progress: number = await BackupLinksService.getBackupLinkProgress(
         'id',

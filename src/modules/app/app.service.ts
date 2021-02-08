@@ -17,11 +17,10 @@ import { LoggerService } from '@core/logger/logger.service';
 import { StoragesService } from '../storages/storages.service';
 
 export class Class {
-  #appFolderPath: string = join(
-    process.env.APPDATA,
-    APP_CONSTANTS.appDataFolderName,
+  #logsFolderPath: string = join(
+    APP_CONSTANTS.appDataFolderPath,
+    APP_CONSTANTS.logsFolder,
   );
-  #logsFolderPath: string = join(this.#appFolderPath, APP_CONSTANTS.logsFolder);
 
   #store: StoreService = new StoreService(APP_CONSTANTS.mainDbFileName);
 
@@ -51,7 +50,7 @@ export class Class {
     }
 
     // ? create the folders where the required data will be stored
-    UtilService.createFolder(this.#appFolderPath);
+    UtilService.createFolder(APP_CONSTANTS.appDataFolderPath);
     UtilService.createFolder(this.#logsFolderPath);
 
     await this.#store.set('appInit', true);
@@ -66,7 +65,7 @@ export class Class {
     await StoragesService.removeAllStorages();
 
     const removedSuccessfully: boolean = UtilService.removeFolder(
-      this.#appFolderPath,
+      APP_CONSTANTS.appDataFolderPath,
     );
 
     if (!removedSuccessfully) {

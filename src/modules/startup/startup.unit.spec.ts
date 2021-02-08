@@ -44,6 +44,19 @@ import { StartupService } from './startup.service';
 import { BackupLinkStatus } from '../backup-links/@types';
 
 describe('StartupService', () => {
+  const initialAppDataPath = global.process.env.APPDATA;
+  const initialHomePath = global.process.env.HOME;
+
+  beforeAll(() => {
+    global.process.env.APPDATA = '';
+    global.process.env.HOME = '';
+  });
+
+  afterAll(() => {
+    global.process.env.APPDATA = initialAppDataPath;
+    global.process.env.HOME = initialHomePath;
+  });
+
   describe('generateStartupScript()', () => {
     it('Should throw an error if platform is not supported', () => {
       delete global.process.platform;

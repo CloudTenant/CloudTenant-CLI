@@ -46,8 +46,7 @@ export class StoreService {
     }
 
     this.#storeFilePath = join(
-      process.env.APPDATA,
-      APP_CONSTANTS.appDataFolderName,
+      APP_CONSTANTS.appDataFolderPath,
       `${storeFileName}.json`,
     );
     this.#data = this.#parseStoreFileSync(this.#storeFilePath);
