@@ -5,6 +5,7 @@ import { program } from 'commander';
 import * as ora from 'ora';
 import { S3 } from 'aws-sdk';
 import { accessSync, watchFile } from 'fs';
+import * as compareVersions from 'compare-versions';
 
 /**
  * * Services
@@ -25,7 +26,7 @@ import { Prompt } from '@core/prompt/prompt';
 /**
  * * Constants
  */
-import { USER_MESSAGES } from './constants';
+import { APP_CONSTANTS, USER_MESSAGES } from './constants';
 
 /**
  * * Types
@@ -61,8 +62,20 @@ process.on('unhandledRejection', function (error: Error | CustomError) {
   LoggerService.error(USER_MESSAGES.unknownErr + '\n');
 });
 
-if (!process.env.APPDATA || !process.env.HOME) {
+/**
+ * * Prevent app from running if any of this conditions are met
+ */
+if (
+  (process.platform === 'win32' && !process.env.APPDATA) ||
+  (process.platform !== 'win32' && !process.env.HOME)
+) {
   throw new PlatformError(USER_MESSAGES.failedToInitialize);
+}
+
+if (compareVersions(process.version, APP_CONSTANTS.minNodeJSVersion) === -1) {
+  throw new PlatformError(
+    `${USER_MESSAGES.nodeVersionNotSupported} Minimum version is ${APP_CONSTANTS.minNodeJSVersion}`,
+  );
 }
 
 // ? injected by webpack at build time

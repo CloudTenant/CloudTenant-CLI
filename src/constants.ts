@@ -10,6 +10,7 @@ export const USER_MESSAGES = {
     'An unknown error occurred. Please submit an issue if this impacts you',
   failedToInitialize:
     'The application could not initialize because the HOME path is missing. If you encounter this problem, please report it',
+  nodeVersionNotSupported: 'This NodeJS version is not supported.',
 
   // ? used when a startup script is generated
   unknownPlatform: 'We are sorry, but your operating system is not supported',
@@ -17,6 +18,8 @@ export const USER_MESSAGES = {
 };
 
 export const APP_CONSTANTS = {
+  minNodeJSVersion: '14.14.0',
+
   appDataFolderPath:
     process.platform === 'win32'
       ? join(process.env.APPDATA, 'CloudTenantCLI')
