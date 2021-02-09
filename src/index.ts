@@ -74,7 +74,7 @@ if (
 
 if (compareVersions(process.version, APP_CONSTANTS.minNodeJSVersion) === -1) {
   throw new PlatformError(
-    `${USER_MESSAGES.nodeVersionNotSupported} Minimum version is ${APP_CONSTANTS.minNodeJSVersion}`,
+    `${USER_MESSAGES.nodeVersionNotSupported} Minimum version is ${APP_CONSTANTS.minNodeJSVersion}. You are currently running on ${process.version}.`,
   );
 }
 
