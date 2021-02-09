@@ -23,7 +23,8 @@
     "test:unit": "jest .*/.*.unit.spec.ts --runInBand",
     "test:integration": "jest .*/.*.integration.spec.ts --runInBand",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "test:integration:linux": "jest .*/.*.integration.spec.ts --runInBand --modulePathIgnorePatterns keytar.service.integration.spec.ts"
   },
   "repository": {
     "type": "git",

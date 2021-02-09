@@ -44,7 +44,7 @@ jobs:
           node-version: 14
       - run: npm ci
       - run: npm run test:unit
-      - run: npm run test:integration
+      - run: npm run test:integration:linux
         env:
           do_endpoint: ${{ secrets.do_endpoint }}
           do_secretAccessKey: ${{ secrets.do_secretAccessKey }}

@@ -237,6 +237,11 @@ storageCommand
   .command('add', { hidden: !APP_WAS_INITIALIZED })
   .description('add a new S3 type storage space')
   .action(async () => {
+    if (!APP_WAS_INITIALIZED) {
+      LoggerService.warn('You need to initialize the application first');
+      return;
+    }
+
     const confirm: boolean = await Prompt.confirmAction(
       "You will be prompted to add your S3 credentials. These credentials will be stored in your system's keychain. Do you want to proceed?",
     );

@@ -53,7 +53,7 @@ class Class {
       secretAccessKey,
     };
 
-    if (endpoint && accessKeyId && credentials) {
+    if (endpoint && accessKeyId && secretAccessKey) {
       return credentials;
     }
 
