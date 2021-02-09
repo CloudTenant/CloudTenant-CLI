@@ -67,15 +67,15 @@ class Class {
    * * Public methods
    */
   error(msg: string) {
-    process.stderr.write(this.#ansiColor(msg, 'red'));
+    process.stderr.write(this.#ansiColor(msg, 'red') + '\n');
   }
 
   warn(msg: string) {
-    process.stderr.write(this.#ansiColor(msg, 'yellow'));
+    process.stderr.write(this.#ansiColor(msg, 'yellow') + '\n');
   }
 
   success(msg: string) {
-    process.stderr.write(this.#ansiColor(msg, 'green'));
+    process.stderr.write(this.#ansiColor(msg, 'green') + '\n');
   }
 
   log(msg: string | string[]) {

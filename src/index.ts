@@ -45,21 +45,21 @@ import { BackupLinksModel } from './modules/backup-links/model/backup-links.mode
 process.on('uncaughtException', (error: Error | CustomError) => {
   // ? if is a custom error show the msg
   if ((<CustomError>error).isCustom) {
-    LoggerService.error(error.message + '\n');
+    LoggerService.error(error.message);
     return;
   }
 
-  LoggerService.error(USER_MESSAGES.unknownErr + '\n');
+  LoggerService.error(USER_MESSAGES.unknownErr);
 });
 
 process.on('unhandledRejection', function (error: Error | CustomError) {
   // ? if reason is from Error object and is custom
   if ((<CustomError>error).isCustom) {
-    LoggerService.error(error.message + '\n');
+    LoggerService.error(error.message);
     return;
   }
 
-  LoggerService.error(USER_MESSAGES.unknownErr + '\n');
+  LoggerService.error(USER_MESSAGES.unknownErr);
 });
 
 /**
@@ -140,7 +140,7 @@ const startup = program
   .action(() => {
     if (!BackupLinksService.listBackupLinksByNames().length) {
       LoggerService.warn(
-        "You have no backup links at this time. The startup script won't take effect right now, only when you start adding the first backup link.\n\n",
+        "You have no backup links at this time. The startup script won't take effect right now, only when you start adding the first backup link.\n",
       );
     }
 
