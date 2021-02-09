@@ -52,6 +52,21 @@ class Class {
   }
 
   /**
+   * * Test bucket connectivity
+   * @param credentials *
+   */
+  async pingBucket(credentials: S3Credentials, bucket: string): Promise<void> {
+    try {
+      const client: S3 = this.buildS3Client(credentials);
+      await client.headBucket({ Bucket: bucket }).promise();
+    } catch (err) {
+      throw new S3Error(
+        'The bucket cannot be accessed. Check your internet connection, credentials or bucket permissions',
+      );
+    }
+  }
+
+  /**
    * * Upload a file from local file system to S3
    * @param payload
    * @param cb - will be called each time a chunk was READ from the local read stream

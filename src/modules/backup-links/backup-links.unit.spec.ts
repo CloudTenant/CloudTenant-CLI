@@ -66,6 +66,7 @@ jest.mock('@modules/storages/storages.service', () => {
 const MockedS3ManagerService: any = {
   localToS3: (payload: any, cb: any): void => null,
   buildS3Client: (credentials: any): any => '',
+  pingBucket: () => true,
 };
 
 jest.mock('@core/s3-manager/s3-manager.service', () => {
@@ -261,7 +262,7 @@ describe('BackupLinksService - Unit Tests', () => {
         throw new Error();
       });
 
-      await BackupLinksService.startBackup('id');
+      await expect(BackupLinksService.startBackup('id')).rejects.toThrow();
 
       expect(spyEmptyFileContent).toHaveBeenCalledTimes(1);
       expect(spyEmptyFileContent).toHaveBeenCalledWith('my-path');
@@ -277,6 +278,35 @@ describe('BackupLinksService - Unit Tests', () => {
         'my-path',
         LOG_MARKERS.footer,
       );
+    });
+
+    it('Should throw an error and log the error in logs file if the bucket is not accessible', async () => {
+      const errMsg = 'Error- Cant access bucket';
+      MockedBackupLinksModel.raw.id = {
+        status: BackupLinkStatus.PENDING,
+        logsPath: 'my-path',
+      };
+
+      jest.spyOn(fs, 'accessSync').mockImplementation(() => {});
+
+      const spyAppendToFile = jest.fn();
+      jest
+        .spyOn(MockedLoggerService, 'appendToFile')
+        .mockImplementation(spyAppendToFile);
+
+      const spyPingBucket = jest
+        .spyOn(MockedS3ManagerService, 'pingBucket')
+        .mockImplementation(() => {
+          throw new Error(errMsg);
+        });
+
+      await expect(BackupLinksService.startBackup('id')).rejects.toThrow(
+        errMsg,
+      );
+
+      expect(spyPingBucket).toHaveBeenCalled();
+      expect(spyAppendToFile).toHaveBeenCalledTimes(3);
+      expect(spyAppendToFile).toHaveBeenNthCalledWith(2, 'my-path', errMsg);
     });
 
     // *

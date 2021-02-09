@@ -191,7 +191,24 @@ class Class {
         `Your folder ${backupLink.localDirPath} is not accessible anymore`,
       );
       await LoggerService.appendToFile(backupLink.logsPath, LOG_MARKERS.footer);
-      return;
+
+      throw err;
+    }
+
+    // ? Get the s3 client for this storage
+    const s3Credentials: S3Credentials = await StoragesService.getS3Credentials(
+      backupLink.storageId,
+    );
+
+    const s3: S3 = S3ManagerService.buildS3Client(s3Credentials);
+
+    // ? Check bucket connectivity
+    try {
+      await S3ManagerService.pingBucket(s3Credentials, backupLink.bucket);
+    } catch (err) {
+      await LoggerService.appendToFile(backupLink.logsPath, `${err.message}`);
+      await LoggerService.appendToFile(backupLink.logsPath, LOG_MARKERS.footer);
+      throw err;
     }
 
     // ? Calculate the entire size of local path
@@ -205,12 +222,6 @@ class Class {
     const files: string[] = await DirUtils.listFolderContent(
       backupLink.localDirPath,
     );
-
-    // ? Get the s3 client for this storage
-    const s3Credentials: S3Credentials = await StoragesService.getS3Credentials(
-      backupLink.storageId,
-    );
-    const s3: S3 = S3ManagerService.buildS3Client(s3Credentials);
 
     // ? Mark the backpu link as in progress
     BackupLinksModel.raw[backupLinkId].status = BackupLinkStatus.ACTIVE;
