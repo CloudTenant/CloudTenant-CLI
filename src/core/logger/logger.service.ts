@@ -132,6 +132,8 @@ class Class {
           }
         }
       });
+
+      process.stdout.write(`\n`);
     });
   }
 
