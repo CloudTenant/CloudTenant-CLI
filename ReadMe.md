@@ -2,6 +2,15 @@
     <img src='https://github.com/CloudTenant/CloudTenant-CLI/raw/master/static/logo.png' alt='logo'>
 </div>
 
+<div style='text-align:center'>
+    <img src='https://img.shields.io/github/issues/CloudTenant/CloudTenant-CLI' alt='issues'>
+    <img src='https://img.shields.io/github/forks/CloudTenant/CloudTenant-CLI' alt='forks'>
+    <img src='https://img.shields.io/github/stars/CloudTenant/CloudTenant-CLI' alt='stars'>
+    <img src='https://img.shields.io/github/license/CloudTenant/CloudTenant-CLI' alt='license'>
+    <img src='https://img.shields.io/github/package-json/v/CloudTenant/CloudTenant-CLI?color=%237146f9&logo=javascript' alt='version'>
+    <a href="https://david-dm.org/CloudTenant/CloudTenant-CLI" title="dependencies status"><img src="https://status.david-dm.org/gh/CloudTenant/CloudTenant-CLI.svg"/></a>
+</div>
+
 **CTC** (Cloud Tenat CLI) is a backup tool that you can use to save your local files in **S3** cloud storages. It works by creating backup links to a specific local path and S3 storage.
 
 # Table-of-Contents
@@ -10,6 +19,7 @@
 - [Commands](#commands)
 - [Examples](#examples)
 - [Current consideration](#current-consideration)
+- [System Requirements](#System-Requirements)
 
 # Usage Workflow
 
@@ -152,3 +162,18 @@ The startup process will only run the command `ctc startup do-logic`. Therefore 
 Pull requests and stars are always welcome. Please check the guidelines.
 
 This project is open-source, and your help is more than welcome.
+
+At the same time, if you have suggestions or want to see a feature added, use the following [topic](https://github.com/CloudTenant/CloudTenant-CLI/discussions/categories/ideas-suggestions).
+
+# System-Requirements
+
+In the current stage, you need to have NodeJS version **14.14.0** or higher.
+
+## Linux specific
+
+`libsecret` and `gnome keyring` must be installed.
+
+## Other mentions
+
+If you find that this app doesn't work for your environment or specific configuration, then open a discussion in the next
+[category](https://github.com/CloudTenant/CloudTenant-CLI/discussions/categories/environment-specific-issues).
