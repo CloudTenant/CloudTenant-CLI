@@ -23,8 +23,6 @@ class Class {
   // ? this map is
   #overWriteFileMap: Map<string, boolean> = new Map();
 
-  constructor() {}
-
   /**
    * * Private methods
    */

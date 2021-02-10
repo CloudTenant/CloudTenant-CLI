@@ -43,8 +43,6 @@ class Class {
   // ? used to save the processes that will be spawned after a given timeout
   #scheduledProcesses: Map<string, NodeJS.Timeout> = new Map();
 
-  constructor() {}
-
   /**
    * * Private methods
    */
@@ -58,9 +56,9 @@ class Class {
     const scriptsFolderPath: string = join(__dirname, '..', 'scripts');
 
     // ? generate the vbs file
-    const vbsFileName: string = 'launch_bat.vbs';
+    const vbsFileName = 'launch_bat.vbs';
 
-    const vbsFileContent: string = generateContentForVbsFile(
+    const vbsFileContent = generateContentForVbsFile(
       join(scriptsFolderPath, STARTUP_CONSTANTS.wInScriptName),
     );
     const vbsFilePath: string = join(scriptsFolderPath, vbsFileName);
@@ -76,7 +74,7 @@ class Class {
 
     // ? generate the command that the user will need to run to move the script to the startup folder
 
-    const command: string = `copy "${vbsFilePath}" "${destinationPath}"`;
+    const command = `copy "${vbsFilePath}" "${destinationPath}"`;
     return command;
   };
 
@@ -206,7 +204,7 @@ class Class {
         !this.#scheduledProcesses.has(id),
     );
 
-    idsOfPendingBackups.forEach((id: string, i) => {
+    idsOfPendingBackups.forEach((id: string) => {
       this.#scheduleBackup(id);
     });
   }

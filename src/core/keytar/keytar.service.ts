@@ -11,8 +11,6 @@ import { APP_CONSTANTS } from '@src/constants';
 class Class {
   #service: string = APP_CONSTANTS.appName;
 
-  constructor() {}
-
   async save(account: string, password: string): Promise<void> {
     await keytar.setPassword(this.#service, account, password);
   }

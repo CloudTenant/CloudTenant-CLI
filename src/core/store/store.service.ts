@@ -69,7 +69,7 @@ export class StoreService {
   }
 
   // * read the data from the db file and update the private var
-  async update() {
+  async update(): Promise<boolean | never> {
     try {
       this.#data = await this.#parseStoreFileASync(this.#storeFilePath);
       return true;
