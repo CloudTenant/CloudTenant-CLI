@@ -165,6 +165,10 @@ This project is open-source, and your help is more than welcome.
 
 At the same time, if you have suggestions or want to see a feature added, use the following [topic](https://github.com/CloudTenant/CloudTenant-CLI/discussions/categories/ideas-suggestions).
 
+This project is open-source, and your help is more than welcome.
+
+At the same time, if you have suggestions or want to see a feature added, use the following [topic](https://github.com/CloudTenant/CloudTenant-CLI/discussions/categories/ideas-suggestions).
+
 # System-Requirements
 
 In the current stage, you need to have NodeJS version **14.14.0** or higher.
