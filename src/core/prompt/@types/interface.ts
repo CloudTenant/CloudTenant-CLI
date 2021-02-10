@@ -4,7 +4,7 @@
 export interface InputForBackupLink {
   localDirPath: string;
   bucket: string;
-  jobFrequenceMs: number;
+  jobFrequenceMs: string;
   prefix?: string;
   linkName: string;
 }

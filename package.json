@@ -1,6 +1,6 @@
 {
   "name": "cloud-tenant-cli",
-  "version": "0.0.2",
+  "version": "0.8.0",
   "description": "NodeJS backup tool for S3 Storages",
   "main": "./dist/index.js",
   "types": "./dist/**/*.d.ts",

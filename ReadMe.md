@@ -159,7 +159,7 @@ The startup process will only run the command `ctc startup do-logic`. Therefore 
 
 ## Contributing
 
-Pull requests and stars are always welcome. Please check the guidelines.
+Pull requests and stars are always welcome. Please check the [guidelines](https://github.com/CloudTenant/CloudTenant-CLI/blob/master/CONTRIBUTING.md).
 
 This project is open-source, and your help is more than welcome.
 

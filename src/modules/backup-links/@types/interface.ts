@@ -5,7 +5,7 @@ export interface BackupLink {
   storageId: string;
   localDirPath: string;
   bucket: string;
-  jobFrequenceMs: number;
+  jobFrequenceMs: string;
   prefix?: string; // ? s3 prefix (folder)
   linkName?: string; // ? unique
 
@@ -27,7 +27,7 @@ export interface AddBackupLinkParams {
   storageId: string;
   localDirPath: string;
   bucket: string;
-  jobFrequenceMs: number;
+  jobFrequenceMs: string;
   prefix?: string;
   linkName: string;
 }

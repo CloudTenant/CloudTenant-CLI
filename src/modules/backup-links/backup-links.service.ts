@@ -9,6 +9,7 @@ import * as upath from 'upath';
 import * as os from 'os';
 import { S3 } from 'aws-sdk';
 import * as util from 'util';
+
 const ms = require('ms');
 
 /**
@@ -216,7 +217,7 @@ class Class {
       backupLink.localDirPath,
     );
 
-    let uploadedBytesSize: number = 0;
+    let uploadedBytesSize = 0;
 
     // ? Return an array with all the files from the folder
     const files: string[] = await DirUtils.listFolderContent(
@@ -254,7 +255,7 @@ class Class {
             const percentage: number =
               (uploadedBytesSize * 100) / totalBytesSize;
 
-            const progressMsg: string = `${percentage.toFixed(
+            const progressMsg = `${percentage.toFixed(
               2,
             )}% - ${UtilService.bytesToSize(
               uploadedBytesSize,
