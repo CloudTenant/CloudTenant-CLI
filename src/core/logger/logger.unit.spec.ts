@@ -160,32 +160,5 @@ describe('LoggerService - Unit Testing', () => {
       await LoggerService.overWriteFileAtPosition('path', NEW_LINE_TO_USE, 1);
       expect(MOCKED_FS_WRITTEN_VALUE).toBe(EXPECTED_OUTPUT);
     });
-
-    it('The next overWrite call should be rejected if the first call was not finished, due to a slow or read or write prcoess', async (done) => {
-      // ? mock a slow write process
-      jest
-        .spyOn(fs, 'writeFile')
-        .mockImplementationOnce((path, text: any, cb) => {
-          setTimeout(() => {
-            MOCKED_FS_WRITTEN_VALUE = text;
-            cb(undefined);
-          });
-        });
-
-      LoggerService.overWriteFileAtPosition('second-path', NEW_LINE_TO_USE, 1);
-
-      const secondWrite: boolean = await LoggerService.overWriteFileAtPosition(
-        'second-path',
-        'ddd',
-        1,
-      );
-
-      setTimeout(() => {
-        expect(secondWrite).toBeFalsy();
-        expect(MOCKED_FS_WRITTEN_VALUE).toBe(EXPECTED_OUTPUT);
-
-        done();
-      }, 500);
-    });
   });
 });

@@ -14,6 +14,19 @@ jest.mock('@modules/backup-links/model/backup-links.model', () => {
   };
 });
 
+// * PromiseQueue
+const MockedPromiseQueue: any = {
+  schedule: async (fn: any, scope: any, ...args: any[]): Promise<void> => {
+    await fn.call(scope, ...args);
+  },
+};
+
+jest.mock('@src/common/util/promise-queue', () => {
+  return {
+    PromiseQueue: MockedPromiseQueue,
+  };
+});
+
 // * AppService
 const MockedAppService: any = {
   logsFolderPath: 'logs',

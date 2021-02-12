@@ -45,6 +45,7 @@ import {
  * * Constants
  */
 import { LOG_MARKERS, PROGRESS_LOG_LINE_POS } from './constants';
+import { PromiseQueue } from '@src/common/util/promise-queue';
 
 class Class {
   /**
@@ -248,30 +249,28 @@ class Class {
       };
 
       try {
-        await S3ManagerService.localToS3(
-          payload,
-          async (progressBytes: number) => {
-            uploadedBytesSize += progressBytes;
-            const percentage: number =
-              (uploadedBytesSize * 100) / totalBytesSize;
+        await S3ManagerService.localToS3(payload, (progressBytes: number) => {
+          uploadedBytesSize += progressBytes;
+          const percentage: number = (uploadedBytesSize * 100) / totalBytesSize;
 
-            const progressMsg = `${percentage.toFixed(
-              2,
-            )}% - ${UtilService.bytesToSize(
-              uploadedBytesSize,
-            )} / ${UtilService.bytesToSize(totalBytesSize)}`;
+          const progressMsg = `${percentage.toFixed(
+            2,
+          )}% - ${UtilService.bytesToSize(
+            uploadedBytesSize,
+          )} / ${UtilService.bytesToSize(totalBytesSize)}`;
 
-            await LoggerService.overWriteFileAtPosition(
-              backupLink.logsPath,
-              progressMsg,
-              PROGRESS_LOG_LINE_POS,
-            );
+          if (cb) {
+            cb(progressMsg);
+          }
 
-            if (cb) {
-              cb(progressMsg);
-            }
-          },
-        );
+          PromiseQueue.schedule(
+            LoggerService.overWriteFileAtPosition,
+            LoggerService,
+            backupLink.logsPath,
+            progressMsg,
+            PROGRESS_LOG_LINE_POS,
+          );
+        });
 
         await LoggerService.appendToFile(
           backupLink.logsPath,
