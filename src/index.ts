@@ -40,6 +40,11 @@ import { S3Credentials } from './core/s3-manager/@types';
 import { BackupLinksModel } from './modules/backup-links/model/backup-links.model';
 
 /**
+ * * Models
+ */
+import { AppModel } from './modules/app/model/app.model';
+
+/**
  * * Global errors filters
  */
 process.on('uncaughtException', (error: Error | CustomError) => {
@@ -137,7 +142,19 @@ const startup = program
     hidden: !APP_WAS_INITIALIZED,
   })
   .description('generate a startup script')
-  .action(() => {
+  .option('--force', 'generate the script and overcome the warning')
+  .action(async (opts) => {
+    // ? check if the startup script is already running
+    if (!opts.force) {
+      const startupUpAndRunning: boolean = await StartupService.validatePid(
+        AppModel.raw.startupProcess.pid,
+      );
+      if (startupUpAndRunning) {
+        LoggerService.warn(USER_MESSAGES.startupProcessAlreadyRunning);
+        return;
+      }
+    }
+
     if (!BackupLinksService.listBackupLinksByNames().length) {
       LoggerService.warn(
         "You have no backup links at this time. The startup script won't take effect right now, only when you start adding the first backup link.\n",

@@ -50,24 +50,6 @@ class Class {
    */
 
   /**
-   * * Validate if a given PID is the PID of the startup process that's currently running
-   * @param pid
-   */
-  #validatePid = async (pid: number): Promise<boolean> => {
-    try {
-      const list: any[] = await find('pid', pid);
-
-      if (!list.length) {
-        return false;
-      }
-
-      return list[0].cmd.includes('startup do-logic');
-    } catch {
-      return false;
-    }
-  };
-
-  /**
    * * For Windows, the startup script can't be moved directly in the startup folder, because it will open a shell once execuded
    * ? To overcome this problem, a .vbs file is generated and this file will be moved to the startup folder. The purpose of this vbs file is simply to call the Windows startup script
    * @param startupScriptPath - path the windows startup script to be executed
@@ -108,7 +90,7 @@ class Class {
 
     // ? check if the PID saved is still valid (matches to startup process pattern)
     const startupProcessPid: number = AppModel.raw.startupProcess.pid;
-    const pidValid: boolean = await this.#validatePid(startupProcessPid);
+    const pidValid: boolean = await this.validatePid(startupProcessPid);
 
     if (pidValid) {
       return `del "${target}" && TASKKILL /PID ${startupProcessPid} /F`;
@@ -151,6 +133,24 @@ class Class {
   clearTestingHelper() {
     this.#ongoingProcesses.clear();
     this.#scheduledProcesses.clear();
+  }
+
+  /**
+   * * Validate if a given PID is the PID of the startup process that's currently running
+   * @param pid
+   */
+  async validatePid(pid: number): Promise<boolean> {
+    try {
+      const list: any[] = await find('pid', pid);
+
+      if (!list.length) {
+        return false;
+      }
+
+      return list[0].cmd.includes('startup do-logic');
+    } catch {
+      return false;
+    }
   }
 
   /**
