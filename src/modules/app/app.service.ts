@@ -12,17 +12,19 @@ import { UtilService } from '@src/common/util/util.service';
 /**
  * * Services
  */
-import { StoreService } from '@core/store/store.service';
 import { LoggerService } from '@core/logger/logger.service';
 import { StoragesService } from '../storages/storages.service';
+
+/**
+ * * Model
+ */
+import { AppModel } from './model/app.model';
 
 export class Class {
   #logsFolderPath: string = join(
     APP_CONSTANTS.appDataFolderPath,
     APP_CONSTANTS.logsFolder,
   );
-
-  #store: StoreService = new StoreService(APP_CONSTANTS.mainDbFileName);
 
   /**
    * * Private methods
@@ -36,7 +38,7 @@ export class Class {
    * * checkIfAppWasInitialiezd
    */
   checkIfAppWasInitialiezd(): boolean {
-    return this.#store.get('appInit');
+    return AppModel.raw['appInit'];
   }
 
   /**
@@ -44,7 +46,7 @@ export class Class {
    * ? this function will initialize all the requirments (ex: create store folder/folders)
    */
   async initApp(): Promise<boolean> {
-    if (this.#store.get('appInit')) {
+    if (AppModel.raw['appInit']) {
       LoggerService.warn('The application was already initialized');
       return false;
     }
@@ -53,7 +55,8 @@ export class Class {
     UtilService.createFolder(APP_CONSTANTS.appDataFolderPath);
     UtilService.createFolder(this.#logsFolderPath);
 
-    await this.#store.set('appInit', true);
+    AppModel.raw.appInit = true;
+    await AppModel.save();
     return true;
   }
 
@@ -76,6 +79,9 @@ export class Class {
     return true;
   }
 
+  /**
+   * * Getters
+   */
   get logsFolderPath(): string {
     return this.#logsFolderPath;
   }

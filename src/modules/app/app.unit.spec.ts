@@ -2,17 +2,15 @@
  * * Mocking
  */
 
-// * StoreService
-const MockedStoreService: any = {
-  get: (key: string): void => null,
-  set: (key: string, val: any): void => null,
+// * BackupLinksModel
+const MockedAppModel: any = {
+  raw: {},
+  save: (): void => null,
 };
 
-jest.mock('@core/store/store.service', () => {
+jest.mock('@modules/app/model/app.model', () => {
   return {
-    StoreService: jest.fn().mockImplementation((storeFileName: string) => {
-      return MockedStoreService;
-    }),
+    AppModel: MockedAppModel,
   };
 });
 
@@ -57,31 +55,30 @@ import { AppService } from './app.service';
 
 describe('AppService - Unit Tests', () => {
   afterEach(() => {
+    MockedAppModel.raw = {};
     jest.resetAllMocks();
   });
 
   describe('initApp()', () => {
     // *
     it('Should initiate the application, by creating the required folders and by setting the appInit property to true', async () => {
-      jest.spyOn(MockedStoreService, 'get').mockImplementation(() => false);
-
-      const setSpy = jest.spyOn(MockedStoreService, 'set');
+      const spySave = jest.spyOn(MockedAppModel, 'save');
 
       const createFolderSpy = jest.spyOn(MockedUtilsService, 'createFolder');
 
       const output: boolean = await AppService.initApp();
 
       expect(output).toBeTruthy();
-      expect(setSpy).toHaveBeenCalled();
-      expect(setSpy).toHaveBeenCalledWith('appInit', true);
+      expect(MockedAppModel.raw.appInit).toBeTruthy();
       expect(createFolderSpy).toHaveBeenCalledTimes(2);
+      expect(spySave).toHaveBeenCalled();
     });
 
     // *
     it('Should handle the scenario where the application was initiated before', async () => {
-      jest.spyOn(MockedStoreService, 'get').mockImplementation(() => true);
+      MockedAppModel.raw.appInit = true;
 
-      const setSpy = jest.spyOn(MockedStoreService, 'set');
+      const saveSpy = jest.spyOn(MockedAppModel, 'save');
       const createFolderSpy = jest.spyOn(MockedUtilsService, 'createFolder');
       const warnSpy = jest.spyOn(MockedLoggerService, 'warn');
 
@@ -89,7 +86,7 @@ describe('AppService - Unit Tests', () => {
 
       expect(output).toBeFalsy();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(setSpy).toHaveBeenCalledTimes(0);
+      expect(saveSpy).toHaveBeenCalledTimes(0);
       expect(createFolderSpy).toHaveBeenCalledTimes(0);
     });
   });

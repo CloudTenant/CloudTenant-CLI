@@ -44,7 +44,8 @@ describe('AppService - Integration Tests', () => {
         ),
       );
 
-      expect(data.appInit).toBeTruthy();
+      // ? app is the key of the model -> check app.model.ts
+      expect(data.app.appInit).toBeTruthy();
     });
   });
 });

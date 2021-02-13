@@ -27,7 +27,7 @@ export const APP_CONSTANTS = {
 
   logsFolder: 'logs', // ? folder that will be created inside appDataFolderPath
   appName: 'CloudTenantCLI', // ? application name that will be used in keytar to store credentials
-  mainDbFileName: 'preferences',
+  mainDbFileName: 'app',
   storagesDbFileName: 'storages',
   backupLinkDbFileName: 'backup-links',
 };
