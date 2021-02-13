@@ -80,6 +80,15 @@ export class Class {
   }
 
   /**
+   * * When the startup do-logic command will be run the PID of that process will be saved in the general storage file
+   * ? this is useful for the `startup remove` command to generate a command that will also stop the current process
+   */
+  async saveStartupProcessPid(): Promise<void> {
+    AppModel.raw.startupProcess.pid = process.pid;
+    await AppModel.save();
+  }
+
+  /**
    * * Getters
    */
   get logsFolderPath(): string {

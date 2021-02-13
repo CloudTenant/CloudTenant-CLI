@@ -5,6 +5,7 @@ import { join } from 'path';
 import * as child_process from 'child_process';
 import * as tree_kill from 'tree-kill';
 import { writeFileSync } from 'fs';
+const find = require('find-process');
 
 /**
  * * Types
@@ -28,6 +29,7 @@ import { STARTUP_CONSTANTS, generateContentForVbsFile } from './constants';
  */
 import { BackupLinksModel } from '../backup-links/model/backup-links.model';
 import { BackupLinksService } from '../backup-links/backup-links.service';
+import { AppModel } from '../app/model/app.model';
 
 class Class {
   /**
@@ -46,6 +48,24 @@ class Class {
   /**
    * * Private methods
    */
+
+  /**
+   * * Validate if a given PID is the PID of the startup process that's currently running
+   * @param pid
+   */
+  #validatePid = async (pid: number): Promise<boolean> => {
+    try {
+      const list: any[] = await find('pid', pid);
+
+      if (!list.length) {
+        return false;
+      }
+
+      return list[0].cmd.includes('startup do-logic');
+    } catch {
+      return false;
+    }
+  };
 
   /**
    * * For Windows, the startup script can't be moved directly in the startup folder, because it will open a shell once execuded
@@ -74,19 +94,27 @@ class Class {
 
     // ? generate the command that the user will need to run to move the script to the startup folder
 
-    const command = `copy "${vbsFilePath}" "${destinationPath}"`;
+    const command = `copy "${vbsFilePath}" "${destinationPath}" && "${destinationPath}"`;
     return command;
   };
 
   // *
-  #generateRemoveScriptForWin = (): string => {
+  #generateRemoveScriptForWin = async (): Promise<string> => {
     const target: string = join(
       process.env.APPDATA,
       `Microsoft/Windows/Start Menu/Programs/Startup`,
       STARTUP_CONSTANTS.wOutScriptName,
     );
 
-    return `del "${target}"`;
+    // ? check if the PID saved is still valid (matches to startup process pattern)
+    const startupProcessPid: number = AppModel.raw.startupProcess.pid;
+    const pidValid: boolean = await this.#validatePid(startupProcessPid);
+
+    if (pidValid) {
+      return `del "${target}" && TASKKILL /PID ${startupProcessPid} /F`;
+    } else {
+      return `del "${target}"`;
+    }
   };
 
   // * Schedule a backup to be executed for a given backpulink based on it's id
@@ -151,7 +179,7 @@ class Class {
   /**
    * * Generate the script to be used by the user to disable startup behavior
    */
-  generateUnStartupScript() {
+  async generateUnStartupScript() {
     const isKnownPlatform: string | undefined =
       AllowedPlatforms[process.platform as AllowedPlatforms];
 
@@ -163,7 +191,7 @@ class Class {
     const dic: any = {};
     dic[AllowedPlatforms.win32] = this.#generateRemoveScriptForWin;
 
-    const scriptToRun: string = dic[isKnownPlatform].call(this);
+    const scriptToRun: string = await dic[isKnownPlatform].call(this);
 
     return scriptToRun;
   }

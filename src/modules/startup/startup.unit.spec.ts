@@ -3,6 +3,10 @@
  */
 import * as fs from 'fs';
 
+// * find process
+let mockFind = jest.fn();
+jest.mock('find-process', () => mockFind);
+
 // * BackupLinksModel
 const MockedBackupLinksModel: any = {
   raw: {},
@@ -67,7 +71,7 @@ describe('StartupService', () => {
     });
 
     it.each([AllowedPlatforms.win32])(
-      '%s startup script can be generated',
+      '%s startup command can be generated',
       (n) => {
         global.process.platform = n;
 
@@ -81,20 +85,60 @@ describe('StartupService', () => {
   });
 
   describe('generateUnStartupScript()', () => {
-    it('Should throw an error if platform is not supported', () => {
+    // *
+    it('Should throw an error if platform is not supported', async () => {
       delete global.process.platform;
 
-      expect(() => StartupService.generateUnStartupScript()).toThrow(
+      await expect(StartupService.generateUnStartupScript()).rejects.toThrow(
         PlatformError,
       );
     });
 
+    // *
     it.each([AllowedPlatforms.win32])(
-      '%s startup script can be generated',
-      (n) => {
+      "%s simple startup remove command can be generated when the PID of the process doesn't exists anymore",
+      async (n) => {
         global.process.platform = n;
 
-        expect(StartupService.generateUnStartupScript()).toBeDefined();
+        mockFind.mockImplementation(() => []);
+
+        const cmd: string = await StartupService.generateUnStartupScript();
+
+        expect(cmd).toBeDefined();
+        expect(cmd.includes(' && ')).toBeFalsy();
+        expect(mockFind).toHaveBeenCalled();
+      },
+    );
+
+    // *
+    it.each([AllowedPlatforms.win32])(
+      '%s simple startup remove command can be generated when the PID is the PID of a different and unknown process',
+      async (n) => {
+        global.process.platform = n;
+
+        mockFind.mockImplementation(() => [{ cmd: 'other' }]);
+
+        const cmd: string = await StartupService.generateUnStartupScript();
+
+        expect(cmd).toBeDefined();
+        expect(cmd.includes(' && ')).toBeFalsy();
+        expect(mockFind).toHaveBeenCalled();
+      },
+    );
+
+    // *
+    it.each([AllowedPlatforms.win32])(
+      '%s composed startup remove command can be generated when the PID matches the startup process pattern',
+      async (n) => {
+        global.process.platform = n;
+
+        mockFind.mockImplementation(() => [{ cmd: 'startup do-logic' }]);
+
+        const cmd: string = await StartupService.generateUnStartupScript();
+
+        expect(cmd).toBeDefined();
+        expect(cmd.includes(' && ')).toBeTruthy();
+        expect(mockFind).toHaveBeenCalled();
       },
     );
   });

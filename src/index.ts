@@ -156,8 +156,8 @@ const startup = program
 startup
   .command('remove', { hidden: !APP_WAS_INITIALIZED })
   .description('remove the startup script')
-  .action(() => {
-    const script: string = StartupService.generateUnStartupScript();
+  .action(async () => {
+    const script: string = await StartupService.generateUnStartupScript();
 
     LoggerService.log([
       'Please run the following command, preferably as an administrator\n',
@@ -177,6 +177,7 @@ startup.command('do-logic', { hidden: true }).action(async () => {
   });
 
   await StartupService.startupLogic();
+  await AppService.saveStartupProcessPid();
 });
 
 /**

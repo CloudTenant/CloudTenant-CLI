@@ -15,7 +15,11 @@ import { App } from '../@types/interface';
 import { APP_CONSTANTS } from '@src/constants';
 
 class Model extends BaseModel {
-  #modelData: Partial<App> = {};
+  #modelData: Partial<App> = {
+    startupProcess: {
+      pid: null,
+    },
+  };
 
   get raw() {
     return this.#modelData;
